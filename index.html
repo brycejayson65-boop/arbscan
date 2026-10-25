@@ -1,0 +1,1600 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="ArbScan">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<meta name="theme-color" content="#f3f4f8" media="(prefers-color-scheme: light)">
+<meta name="theme-color" content="#0a0c11" media="(prefers-color-scheme: dark)">
+<title>ArbScan</title>
+<style>
+:root{
+  --bg:#f3f4f8;--surface:#ffffff;--surface2:#f6f7fb;--bd:#e4e7ee;--tx:#0f172a;--mu:#667085;
+  --ac:#5b5bf0;--act:#ffffff;--acs:#ececff;
+  --g:#0f9d58;--gs:#e3f6ec;--a:#b86e00;--as:#fff0d2;--r:#d92d20;--rs:#fde8e6;
+  --sh:0 1px 2px rgba(16,24,40,.05),0 6px 20px rgba(16,24,40,.06);color-scheme:light;
+}
+@media(prefers-color-scheme:dark){:root:not([data-theme=light]){
+  --bg:#0a0c11;--surface:#12151c;--surface2:#181c25;--bd:#242937;--tx:#e8ebf3;--mu:#8b94a9;
+  --ac:#8d8dff;--act:#0a0c11;--acs:#22254a;--g:#34d399;--gs:#0e2a20;--a:#fbbf24;--as:#2c220e;--r:#f87171;--rs:#331a1b;--sh:0 1px 2px rgba(0,0,0,.4),0 6px 20px rgba(0,0,0,.35);color-scheme:dark}}
+:root[data-theme=dark]{
+  --bg:#0a0c11;--surface:#12151c;--surface2:#181c25;--bd:#242937;--tx:#e8ebf3;--mu:#8b94a9;
+  --ac:#8d8dff;--act:#0a0c11;--acs:#22254a;--g:#34d399;--gs:#0e2a20;--a:#fbbf24;--as:#2c220e;--r:#f87171;--rs:#331a1b;--sh:0 1px 2px rgba(0,0,0,.4),0 6px 20px rgba(0,0,0,.35);color-scheme:dark}
+:root[data-theme=light]{color-scheme:light}
+*{box-sizing:border-box}
+html{-webkit-text-size-adjust:100%}
+body{margin:0;background:var(--bg);color:var(--tx);font:14px/1.45 Inter,"Segoe UI",system-ui,-apple-system,Roboto,sans-serif;font-variant-numeric:tabular-nums}
+.app{max-width:1120px;margin:0 auto;padding:0 18px 60px}
+h2{font-size:15px;margin:0;font-weight:650;letter-spacing:-.01em}
+h3{margin:0;font-size:15px;font-weight:650;letter-spacing:-.01em}
+.mu{color:var(--mu);font-size:12.5px}
+.pos{color:var(--g)}.neg{color:var(--r)}.flat{color:var(--mu)}
+.err{color:var(--r);font-size:13px;margin:6px 0}
+[hidden]{display:none!important}
+
+/* header */
+.top{position:sticky;top:0;z-index:20;display:flex;align-items:center;gap:18px;padding:14px 0;background:color-mix(in srgb,var(--bg) 88%,transparent);backdrop-filter:blur(10px);flex-wrap:wrap}
+.brand{display:flex;align-items:center;gap:10px;font-weight:750;font-size:17px;letter-spacing:-.02em}
+.logo{width:26px;height:26px;border-radius:8px;background:linear-gradient(135deg,var(--ac),#22d3ee);display:inline-block}
+.tabs{display:flex;gap:4px;background:var(--surface);border:1px solid var(--bd);padding:4px;border-radius:12px;overflow-x:auto}
+.tab{background:none;border:0;color:var(--mu);padding:7px 14px;border-radius:9px;font:inherit;font-weight:550;cursor:pointer;white-space:nowrap}
+.tab:hover{color:var(--tx)}.tab.on{background:var(--ac);color:var(--act)}
+.count{font-size:11px;background:var(--acs);color:var(--ac);border-radius:999px;padding:1px 7px;margin-left:4px}
+.tab.on .count{background:rgba(255,255,255,.25);color:inherit}
+.head-r{margin-left:auto;display:flex;gap:8px;align-items:center}
+.pill{border:1px solid var(--bd);background:var(--surface);color:var(--tx);padding:7px 13px;border-radius:999px;font:inherit;font-weight:600;cursor:pointer}
+.icon{border:1px solid var(--bd);background:var(--surface);color:var(--tx);width:34px;height:34px;border-radius:999px;cursor:pointer;font-size:15px}
+
+/* surfaces */
+.card{background:var(--surface);border:1px solid var(--bd);border-radius:16px;padding:18px;box-shadow:var(--sh);margin-bottom:16px}
+.card-h{display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap;margin-bottom:14px}
+.form{display:grid;grid-template-columns:repeat(auto-fit,minmax(210px,1fr));gap:12px}
+label.l,.f>label{display:block;font-size:12px;color:var(--mu);margin-bottom:5px;font-weight:550}
+input[type=text],input[type=number],input[type=password],select,.dd>summary{width:100%;padding:9px 11px;border:1px solid var(--bd);border-radius:10px;background:var(--surface2);color:var(--tx);font:inherit;outline:none}
+input:focus,select:focus{border-color:var(--ac);box-shadow:0 0 0 3px var(--acs)}
+input[type=checkbox]{accent-color:var(--ac);width:auto}
+.row{display:flex;gap:10px;flex-wrap:wrap;align-items:center;margin-top:14px}
+.btn{background:var(--surface2);color:var(--tx);border:1px solid var(--bd);padding:9px 15px;border-radius:10px;font:inherit;font-weight:600;cursor:pointer}
+.btn:hover{border-color:var(--ac)}
+.btn.pri{background:var(--ac);color:var(--act);border-color:var(--ac)}
+.btn.ghost{background:transparent}
+.btn.sm{padding:6px 11px;font-size:12.5px;border-radius:8px}
+.btn.danger:hover{border-color:var(--r);color:var(--r)}
+.seg{display:inline-flex;background:var(--surface);border:1px solid var(--bd);border-radius:10px;padding:3px;gap:2px}
+.seg button{border:0;background:none;color:var(--mu);padding:6px 13px;border-radius:7px;font:inherit;font-weight:600;cursor:pointer}
+.seg button.on{background:var(--acs);color:var(--ac)}
+.sw{position:relative;display:inline-flex}
+.sw input{position:absolute;opacity:0;inset:0;cursor:pointer;width:100%;height:100%;margin:0}
+.sw span{padding:6px 13px;border:1px solid var(--bd);border-radius:999px;color:var(--mu);font-weight:600;background:var(--surface2);font-size:13px}
+.sw input:checked+span{background:var(--acs);color:var(--ac);border-color:var(--ac)}
+.srcs{display:flex;gap:8px;flex-wrap:wrap}
+
+/* dropdown panels */
+.dd{position:relative;margin:0}
+.dd>summary{list-style:none;cursor:pointer;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;padding-right:30px;position:relative}
+.dd>summary::-webkit-details-marker{display:none}
+.dd>summary::after{content:"";position:absolute;right:13px;top:50%;width:7px;height:7px;border-right:2px solid var(--mu);border-bottom:2px solid var(--mu);transform:translateY(-70%) rotate(45deg)}
+.ddlist{position:absolute;z-index:30;left:0;right:0;min-width:240px;background:var(--surface);border:1px solid var(--bd);border-radius:12px;padding:8px;margin-top:6px;max-height:290px;overflow:auto;box-shadow:var(--sh)}
+.ddlist label{display:flex;gap:9px;align-items:center;color:var(--tx);font-size:13px;margin:0;padding:6px 8px;border-radius:8px;cursor:pointer}
+.ddlist label:hover{background:var(--surface2)}
+.ddlist .row{margin:0 0 6px}
+.chips{display:flex;gap:8px;flex-wrap:wrap;margin-top:14px}
+.chip{border:1px solid var(--bd);background:var(--surface2);border-radius:999px;padding:5px 6px 5px 13px;font-size:13px;display:inline-flex;gap:8px;align-items:center}
+.chip button{border:0;background:var(--surface);color:var(--mu);width:22px;height:22px;border-radius:999px;cursor:pointer;padding:0}
+.chip button:hover{color:var(--r)}
+.bar{display:flex;gap:10px;align-items:center;flex-wrap:wrap;margin:4px 0 10px}
+.bar .seg{margin-left:auto}
+.notes{color:var(--mu);font-size:12.5px;margin-bottom:12px;line-height:1.6}
+
+/* opportunity cards */
+.opps{display:grid;grid-template-columns:repeat(auto-fill,minmax(440px,1fr));gap:14px}
+@media(max-width:520px){.opps{grid-template-columns:1fr}}
+.empty{grid-column:1/-1;text-align:center;color:var(--mu);padding:46px 10px;border:1px dashed var(--bd);border-radius:16px}
+.opp{background:var(--surface);border:1px solid var(--bd);border-radius:16px;padding:16px;box-shadow:var(--sh);display:flex;flex-direction:column;gap:12px}
+.opp.placed{border-color:var(--g)}
+.oh{display:flex;gap:12px;align-items:flex-start}
+.badge{font-size:11px;font-weight:750;letter-spacing:.05em;padding:4px 9px;border-radius:7px;flex:none}
+.badge.ARB{background:var(--gs);color:var(--g)}.badge.MIDDLE{background:var(--as);color:var(--a)}
+.badge.SETTLED,.badge.CUSTOM{background:var(--acs);color:var(--ac)}
+.ot{flex:1;min-width:0}.ot p{margin:2px 0 0;color:var(--mu);font-size:12.5px}
+.kpi{text-align:right;flex:none}.kpi b{display:block;font-size:20px;letter-spacing:-.02em;line-height:1.1}.kpi span{font-size:11.5px;color:var(--mu)}
+.legs{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:10px}
+.leg{background:var(--surface2);border:1px solid var(--bd);border-radius:12px;padding:10px 12px}
+.leg .bk{font-size:12px;color:var(--mu);font-weight:600}
+.leg .sel{font-weight:700;font-size:15px;margin:2px 0}
+.leg .px{color:var(--mu);font-size:12.5px;margin-bottom:8px}
+.stk{display:flex;align-items:center;gap:6px;background:var(--surface);border:1px solid var(--bd);border-radius:9px;padding:0 9px}
+.stk i{font-style:normal;color:var(--mu)}
+.stk input{border:0!important;background:transparent!important;box-shadow:none!important;padding:7px 0!important;font-weight:650;width:100%}
+.sc{display:flex;gap:8px;flex-wrap:wrap}
+.edrows{display:flex;flex-direction:column;gap:8px}
+.edr{display:grid;grid-template-columns:1.5fr .9fr .8fr .8fr 1.1fr auto;gap:8px;align-items:center}
+.edr input,.edr select{padding:8px 9px}
+@media(max-width:560px){.edr{grid-template-columns:1fr 1fr}}
+.edrows>.btn{align-self:flex-start}
+.sp{display:flex;flex-direction:column;background:var(--surface2);border:1px solid var(--bd);border-radius:10px;padding:6px 10px;min-width:120px}
+.sp i{font-style:normal;font-size:11.5px;color:var(--mu)}.sp b{font-size:14px}
+.of{display:flex;align-items:center;gap:14px;flex-wrap:wrap;border-top:1px solid var(--bd);padding-top:12px}
+.place{display:flex;align-items:center;gap:9px;font-weight:650;cursor:pointer}
+.place input{width:18px;height:18px}
+.tot{margin-left:auto;display:flex;align-items:center;gap:8px;color:var(--mu);font-size:12.5px}
+.tot .stk{width:110px}
+.warn{font-size:12px;color:var(--a);background:var(--as);padding:3px 8px;border-radius:7px}
+
+/* bets */
+.sec-h{display:flex;align-items:center;justify-content:space-between;gap:10px;margin:22px 0 10px;flex-wrap:wrap}
+.bet{background:var(--surface);border:1px solid var(--bd);border-radius:14px;padding:14px;margin-bottom:10px;box-shadow:var(--sh)}
+.bh{display:flex;gap:10px;align-items:center;flex-wrap:wrap}
+.bh .amt{margin-left:auto;font-weight:650}
+.bl{display:flex;flex-wrap:wrap;gap:8px;margin:10px 0}
+.bl span{background:var(--surface2);border:1px solid var(--bd);border-radius:9px;padding:4px 10px;font-size:12.5px}
+.bs{display:flex;gap:8px;flex-wrap:wrap;align-items:center}
+.bs input,.bs select{width:150px;padding:7px 10px}
+.bs .sep{color:var(--mu);font-size:12px}
+.br{display:flex;gap:12px;align-items:center;flex-wrap:wrap}
+.br b{font-size:16px}
+.sugg{display:flex;align-items:center;gap:12px;flex-wrap:wrap;background:var(--acs);border-radius:10px;padding:8px 12px;margin-bottom:10px}
+.sugg span{flex:1;min-width:200px}
+
+/* results */
+.kpis{display:grid;grid-template-columns:repeat(auto-fit,minmax(170px,1fr));gap:12px;margin-bottom:16px}
+.k{background:var(--surface);border:1px solid var(--bd);border-radius:14px;padding:14px 16px;box-shadow:var(--sh)}
+.k span{display:block;color:var(--mu);font-size:12px;font-weight:600}
+.k b{display:block;font-size:24px;letter-spacing:-.02em;margin-top:2px}
+.k small{color:var(--mu)}
+.chart{width:100%;height:auto;display:block}
+.ch-line{fill:none;stroke:var(--ac);stroke-width:2.5;stroke-linejoin:round;stroke-linecap:round}
+.ch-area{fill:var(--ac);opacity:.12}
+.ch-grid{stroke:var(--bd);stroke-width:1}.ch-zero{stroke:var(--mu);stroke-width:1;stroke-dasharray:4 4}
+.ch-t{fill:var(--mu);font-size:11px}
+.ch-dot{fill:var(--surface);stroke:var(--ac);stroke-width:2}
+table{width:100%;border-collapse:collapse;font-size:13px}
+th{color:var(--mu);font-weight:600;font-size:12px;text-align:right;padding:8px 6px;border-bottom:1px solid var(--bd)}
+td{padding:9px 6px;text-align:right;border-bottom:1px solid var(--bd)}
+th:first-child,td:first-child{text-align:left}
+.two{display:grid;grid-template-columns:repeat(auto-fit,minmax(380px,1fr));gap:16px}
+@media(max-width:520px){.two{grid-template-columns:1fr}}
+#toast{position:fixed;left:50%;bottom:24px;transform:translateX(-50%);background:var(--tx);color:var(--bg);padding:10px 16px;border-radius:12px;font-weight:600;box-shadow:var(--sh);z-index:50;opacity:0;pointer-events:none;transition:opacity .2s}
+#toast.show{opacity:1}
+
+/* modal */
+.modal{position:fixed;inset:0;z-index:60;background:rgba(0,0,0,.5);display:flex;align-items:center;justify-content:center;padding:16px}
+.mbox{background:var(--surface);border:1px solid var(--bd);border-radius:16px;padding:18px;width:min(560px,100%);box-shadow:var(--sh)}
+.mbox textarea{width:100%;margin:10px 0;padding:10px;border:1px solid var(--bd);border-radius:10px;background:var(--surface2);color:var(--tx);font:12px/1.4 ui-monospace,Consolas,monospace;resize:vertical}
+.menu{display:flex;flex-direction:column;gap:2px}
+.menu .btn{border:0;background:none;text-align:left;border-radius:8px;width:100%}
+.menu .btn:hover{background:var(--surface2)}
+button{touch-action:manipulation}
+.card{overflow-wrap:anywhere}
+#tab-results .card{overflow-x:auto}
+
+/* phone */
+@media(max-width:640px){
+  .app{padding:0 12px calc(96px + env(safe-area-inset-bottom))}
+  .top{position:static;backdrop-filter:none;background:none;padding:10px 0;gap:10px}
+  .brand{font-size:16px}
+  .tabs{position:fixed;left:0;right:0;bottom:0;z-index:40;border-radius:0;border-width:1px 0 0;gap:2px;overflow:visible;
+        background:var(--surface);padding:6px 8px calc(6px + env(safe-area-inset-bottom))}
+  .tab{flex:1;text-align:center;padding:10px 2px;font-size:12.5px}
+  .card{padding:14px;border-radius:14px}
+  .opp{padding:14px}
+  .legs{grid-template-columns:repeat(auto-fit,minmax(135px,1fr))}
+  .kpis{grid-template-columns:1fr 1fr}.k b{font-size:20px}
+  input[type=text],input[type=number],input[type=password],select,.dd>summary,textarea{font-size:16px}
+  .btn{min-height:42px}.btn.sm{min-height:38px}
+  .bar .seg{margin-left:0;width:100%}.bar .seg button{flex:1}
+  .bs input,.bs select{width:100%}
+  .sp{flex:1;min-width:105px}
+  table{font-size:12px}
+  #toast{bottom:calc(86px + env(safe-area-inset-bottom));width:max-content;max-width:90%}
+  .ddlist{min-width:0}
+}
+
+</style>
+</head>
+<body>
+<div class="app">
+<header class="top">
+  <div class="brand"><span class="logo"></span><span>ArbScan</span></div>
+  <nav class="tabs" id="tabs">
+    <button class="tab on" data-tab="scan">Scanner</button>
+    <button class="tab" data-tab="bets">My bets <span class="count" id="openCount" hidden></span></button>
+    <button class="tab" data-tab="results">Results</button>
+    <button class="tab" data-tab="settings">Settings</button>
+  </nav>
+  <div class="head-r">
+    <button class="pill" id="netpill" title="Net result of settled bets">Net $0.00</button>
+    <button class="icon" id="theme" title="Light / dark">&#9680;</button>
+  </div>
+</header>
+
+<!-- ================= SCANNER ================= -->
+<section id="tab-scan">
+  <div class="card">
+    <div class="card-h">
+      <h2>Scan setup</h2>
+      <div class="srcs">
+        <label class="sw"><input type="checkbox" id="srcOdds" checked><span>The Odds API</span></label>
+        <label class="sw"><input type="checkbox" id="srcRapid"><span>RapidOddsAPI (has Bet365)</span></label>
+      </div>
+    </div>
+    <div class="form">
+      <div class="f"><label>Sport / competition</label><select id="sport"></select></div>
+      <div class="f"><label>Player markets</label>
+        <details class="dd" id="mk"><summary id="mksum">Select markets</summary><div id="mklist" class="ddlist"></div></details></div>
+      <div class="f"><label>Games</label>
+        <details class="dd" id="gm"><summary id="gmsum">All upcoming games</summary><div id="gmlist" class="ddlist"></div></details></div>
+      <div class="f"><label>Other market keys (optional)</label><input type="text" id="extra" placeholder="e.g. player_points_alternate"></div>
+    </div>
+    <div class="row">
+      <button class="btn" id="add">Add to scan list</button>
+      <button class="btn ghost" id="loadsports">Load all active sports</button>
+      <span class="mu" id="note"></span>
+    </div>
+    <div class="chips" id="chips"></div>
+    <div class="mu" id="cost" style="margin-top:10px"></div>
+  </div>
+
+  <div class="bar">
+    <button class="btn pri" id="scan">Scan now</button>
+    <button class="btn ghost" id="demo">Demo data</button>
+    <span class="mu" id="meta"></span>
+    <div class="seg" id="filters"></div>
+  </div>
+  <div class="err" id="errs"></div>
+  <div class="notes" id="notes"></div>
+  <div class="opps" id="list"></div>
+</section>
+
+<!-- ================= MY BETS ================= -->
+<section id="tab-bets" hidden>
+  <div class="sec-h" style="margin-top:6px">
+    <h2>Open bets</h2>
+    <div class="row" style="margin:0">
+      <button class="btn sm pri" id="chkRes">Check results</button>
+      <button class="btn sm" id="applyAll" hidden>Settle all</button>
+      <details class="dd" id="bk" style="width:auto"><summary style="width:auto;padding:6px 34px 6px 12px;font-weight:600;border-radius:8px">Backup &amp; export</summary>
+        <div class="ddlist menu" style="left:auto;right:0;min-width:230px">
+          <button class="btn sm" id="copyBk">Copy backup text</button>
+          <button class="btn sm" id="pasteBk">Paste backup text</button>
+          <button class="btn sm" id="expJson">Download backup file</button>
+          <label class="btn sm" style="margin:0;cursor:pointer">Restore from file<input type="file" id="restoreFile" accept=".json,application/json" hidden></label>
+          <button class="btn sm" id="expCsv">Export CSV</button>
+        </div></details>
+    </div>
+  </div>
+  <div class="mu" id="resNote" style="margin:-4px 0 10px"></div>
+  <div id="betsOpen"></div>
+  <div class="sec-h"><h2>Settled</h2></div>
+  <div id="betsDone"></div>
+  <p class="mu">Bets are saved in this browser on this computer. Use Backup now and then so you can restore them if the browser data is ever cleared.</p>
+</section>
+
+<!-- ================= RESULTS ================= -->
+<section id="tab-results" hidden>
+  <div class="bar" style="margin-top:6px">
+    <h2>Results</h2>
+    <div class="seg" id="period"></div>
+  </div>
+  <div class="kpis" id="kpis"></div>
+  <div class="card"><div class="card-h"><h2>Profit over time</h2><span class="mu" id="chartnote"></span></div><div id="chart"></div></div>
+  <div class="two">
+    <div class="card"><div class="card-h"><h2>By type</h2></div><div id="byType"></div></div>
+    <div class="card"><div class="card-h"><h2>By bookmaker</h2></div><div id="byBook"></div></div>
+  </div>
+</section>
+
+<!-- ================= SETTINGS ================= -->
+<section id="tab-settings" hidden>
+  <div class="card">
+    <div class="card-h"><h2>Sync across devices</h2><span class="mu" id="syncStatus">Not connected</span></div>
+    <p class="mu" style="margin:0 0 12px">Keeps your bets, API keys and scan settings the same on your PC and phone. Data is encrypted with your sync password before it is saved to a private GitHub repository you own.</p>
+    <div class="form">
+      <div class="f"><label>GitHub repository (owner/name)</label><input type="text" id="syncRepo" data-nosave placeholder="e.g. yourname/arbscan-data" autocapitalize="none" autocomplete="off"></div>
+      <div class="f"><label>GitHub token</label><input type="password" id="syncToken" data-nosave placeholder="github_pat_..." autocomplete="off"></div>
+      <div class="f"><label>Sync password (make one up, same on every device)</label><input type="password" id="syncPass" data-nosave placeholder="used to encrypt your data" autocomplete="off"></div>
+    </div>
+    <div class="row"><button class="btn pri" id="syncSave">Save &amp; sync now</button><button class="btn ghost" id="syncOff">Disconnect this device</button></div>
+    <details style="margin-top:12px"><summary class="mu" style="cursor:pointer">How to set this up</summary>
+      <ol class="mu" style="margin:8px 0 0;padding-left:18px;line-height:1.7">
+        <li>On GitHub, create a new <b>private</b> repository (e.g. <b>arbscan-data</b>) and tick "Add a README file".</li>
+        <li>GitHub &rarr; your profile picture &rarr; Settings &rarr; Developer settings &rarr; Personal access tokens &rarr; Fine-grained tokens &rarr; Generate new token.</li>
+        <li>Repository access: <b>Only select repositories</b>, choose arbscan-data. Permissions &rarr; Repository permissions &rarr; <b>Contents: Read and write</b>. Generate and copy the token.</li>
+        <li>Enter the repository, token and a sync password here, then Save. Do the same on your other device.</li>
+      </ol></details>
+  </div>
+  <div class="card">
+    <div class="card-h"><h2>Odds API</h2></div>
+    <div class="form">
+      <div class="f"><label>Odds API key</label><input type="password" id="key" placeholder="paste key"></div>
+      <div class="f"><label>Bookmaker keys (blank = every AU book your plan includes)</label><input type="text" id="books" placeholder="e.g. sportsbet,tab,ladbrokes_au,neds,pointsbetau,unibet,betr_au"></div>
+      <div class="f"><label>Max games per sport (props cost 1 call each)</label><input type="number" id="maxev" value="8"></div>
+    </div>
+  </div>
+  <div class="card">
+    <div class="card-h"><h2>RapidOddsAPI</h2></div>
+    <div class="form">
+      <div class="f"><label>RapidOddsAPI key (starts with oa_)</label><input type="password" id="rkey" placeholder="paste key"></div>
+      <div class="f"><label>Bookmaker feeds (every 5 = 1 credit per market)</label>
+        <details class="dd" id="rb"><summary id="rbsum">Select feeds</summary><div id="rblist" class="ddlist"></div></details></div>
+    </div>
+    <p class="mu" style="margin:12px 0 0">Rapid charges per market per 5 feeds for the whole slate (not per game). Free plan = 250 credits, one-off. The Ladbrokes feed includes Neds.</p>
+  </div>
+  <div class="card">
+    <div class="card-h"><h2>What counts as an opportunity</h2></div>
+    <div class="form">
+      <div class="f"><label>Default total stake ($)</label><input type="number" id="stake" value="100"></div>
+      <div class="f"><label>Max results per player &amp; market (0 = all non-beaten)</label><input type="number" id="perkey" min="0" value="1"></div>
+      <div class="f"><label>Min middle window</label><input type="number" id="minw" step="0.5" value="1"></div>
+      <div class="f"><label>Max loss if miss (%)</label><input type="number" id="maxloss" step="0.5" value="6"></div>
+      <div class="f"><label>Auto-refresh (minutes, 0 = off)</label><input type="number" id="auto" value="0"></div>
+      <div class="f"><label>Bookmakers to exclude (can't bet with)</label>
+        <details class="dd" id="ex"><summary id="exsum">None excluded</summary><div id="exlist" class="ddlist"></div></details></div>
+    </div>
+  </div>
+</section>
+</div>
+<div id="modal" class="modal" hidden><div class="mbox"><h2 id="mtitle"></h2><p class="mu" id="mdesc" style="margin:6px 0 0"></p>
+  <textarea id="mtext" rows="8" spellcheck="false"></textarea>
+  <div class="row" style="margin:0"><button class="btn pri" id="mgo"></button><button class="btn" id="mclose">Close</button></div></div></div>
+<div id="toast"></div>
+<datalist id="booklist"><option value="Sportsbet"><option value="TAB"><option value="Ladbrokes"><option value="Neds"><option value="PointsBet"><option value="Bet365"><option value="Betr"><option value="BetRight"><option value="PalmerBet"><option value="Dabble"><option value="PlayUp"><option value="BlueBet"><option value="Unibet"></datalist>
+
+<script>
+const BASE = 'https://api.the-odds-api.com/v4';
+const $ = id => document.getElementById(id);
+const norm = s => (s || '').toLowerCase().replace(/[^a-z0-9 ]/g, '').replace(/\s+/g, ' ').trim();
+const esc = s => String(s ?? '').replace(/[&<>"]/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+const csv = s => s.split(',').map(x => x.trim()).filter(Boolean);
+
+// ---------------------------------------------------------- shared naming
+// Rapid and Odds API name some markets differently; everything is mapped to one canonical key so offers from both sources pair up.
+const RAPID_CAND = {
+  player_pass_yds: ['player_passing_yards', 'player_pass_yds', 'player_passing_yds'],
+  player_reception_yds: ['player_receiving_yards', 'player_reception_yds', 'player_receiving_yds'],
+  player_rush_yds: ['player_rushing_yards', 'player_rush_yds', 'player_rushing_yds'],
+  player_receptions: ['player_receptions'],
+  player_pass_tds: ['player_passing_touchdowns', 'player_pass_tds', 'player_passing_tds'],
+  player_pass_completions: ['player_passing_completions', 'player_pass_completions'],
+  player_rush_reception_yds: ['player_rushing_receiving_yards', 'player_rush_reception_yds', 'player_rush_receiving_yards'],
+  player_threes: ['player_made_threes', 'player_threes'],
+  h2h: ['head_to_head'],
+  totals: ['alternate_total_points']
+};
+const TO_CANON = {};
+for (const [canon, list] of Object.entries(RAPID_CAND)) for (const k of list) TO_CANON[k] = canon;
+const canon = k => TO_CANON[k] || k;
+const bkey = n => norm(n).replace(/ /g, '').replace(/au$/, '');
+const gameKey = (home, away, start) => `${norm(home)}|${norm(away)}|${String(start || '').slice(0, 10)}`;
+
+// ---------------------------------------------------------- engine
+function splitStakes(po, pu, T) {
+  const so = T * pu / (po + pu), su = T - so;
+  return { so, su, miss: so * po - T, hit: so * po + su * pu - T };
+}
+function withinHours(a, b, h = 8) {
+  const da = Date.parse(a), db = Date.parse(b);
+  if (isNaN(da) || isNaN(db)) return true;
+  return Math.abs(da - db) <= h * 3600e3;
+}
+// Higher = better. Free money first, then winning values per 1% of cost.
+const score = o => o.missPct >= 0 ? 1000 + o.missPct : o.values / Math.max(0.25, -o.missPct);
+// For each player/market/day: drop any pairing beaten by another (wider window AND better miss result),
+// then keep only the top perKey (0 = keep all the non-beaten ones).
+function dedupe(opps, perKey) {
+  const by = new Map(), out = [];
+  for (const o of opps) {
+    if (!o.grp) { out.push(o); continue; }
+    if (!by.has(o.grp)) by.set(o.grp, []);
+    by.get(o.grp).push(o);
+  }
+  for (const lst of by.values()) {
+    let keep = lst.filter((a, i) => !lst.some((b, j) => j !== i && (
+      (b.width >= a.width && b.missPct >= a.missPct && (b.width > a.width || b.missPct > a.missPct)) ||
+      (b.width === a.width && b.missPct === a.missPct && j < i))));
+    keep.sort((a, b) => score(b) - score(a));
+    if (perKey > 0) keep = keep.slice(0, perKey);
+    out.push(...keep);
+  }
+  return out;
+}
+function findOpps(offers, cfg) {
+  const T = cfg.stake, opps = [];
+  const groups = new Map();
+  for (const o of offers) {
+    if ((o.side === 'over' || o.side === 'under') && o.line != null) {
+      const key = o.player ? o.market + '|' + norm(o.player) : o.market + '|' + (o.gkey || o.eventKey || norm(o.event));
+      if (!groups.has(key)) groups.set(key, { over: [], under: [] });
+      groups.get(key)[o.side].push(o);
+    }
+  }
+  for (const [key, g] of groups) {
+    const market = key.split('|')[0];
+    for (const ov of g.over) for (const un of g.under) {
+      if ((ov.bk || ov.book) === (un.bk || un.book) || ov.line > un.line) continue;
+      if (!withinHours(ov.start, un.start)) continue;
+      const width = un.line - ov.line;
+      const { so, su, miss, hit } = splitStakes(ov.price, un.price, T);
+      const missPct = miss / T * 100, hitPct = hit / T * 100;
+      let type;
+      if (width === 0) { if (miss <= 0) continue; type = 'ARB'; }
+      else {
+        if (width < cfg.minWidth || missPct < -cfg.maxLoss) continue;
+        type = 'MIDDLE';
+      }
+      const values = Math.max(0, Math.ceil(un.line) - Math.floor(ov.line) - 1);
+      const be = miss >= 0 ? 0 : -miss / (hit - miss) * 100;
+      opps.push({
+        grp: key + '|' + String(ov.start || '').slice(0, 10), kind: 'ou', sport: ov.sport,
+        legs: [{ book: ov.book, side: 'over', line: ov.line, price: ov.price, stake: r2(so) },
+               { book: un.book, side: 'under', line: un.line, price: un.price, stake: r2(su) }],
+        type, event: ov.event, start: ov.start, market, player: ov.player,
+        book1: ov.book, leg1: `OVER ${ov.line} @ ${ov.price.toFixed(2)}`, stake1: so.toFixed(2),
+        book2: un.book, leg2: `UNDER ${un.line} @ ${un.price.toFixed(2)}`, stake2: su.toFixed(2),
+        width, values, missPct: +missPct.toFixed(2), hitPct: +hitPct.toFixed(2), be: +be.toFixed(1),
+        push: Number.isInteger(ov.line) || Number.isInteger(un.line)
+      });
+    }
+  }
+  // head-to-head arbs
+  const h2h = new Map();
+  for (const o of offers) if (o.market === 'h2h') {
+    const k = o.gkey || o.eventKey || norm(o.event);
+    if (!h2h.has(k)) h2h.set(k, []);
+    h2h.get(k).push(o);
+  }
+  for (const lst of h2h.values()) {
+    const perBook = new Map();
+    for (const o of lst) { const b = o.bk || o.book; if (!perBook.has(b)) perBook.set(b, new Set()); perBook.get(b).add(o.side); }
+    const n = Math.max(...[...perBook.values()].map(s => s.size));
+    const best = new Map();
+    for (const o of lst) if (!best.has(o.side) || o.price > best.get(o.side).price) best.set(o.side, o);
+    if (best.size !== n || n < 2) continue;
+    const bs = [...best.values()];
+    const inv = bs.reduce((a, b) => a + 1 / b.price, 0);
+    if (inv >= 1 || new Set(bs.map(b => b.bk || b.book)).size < 2) continue;
+    const prof = (1 / inv - 1) * 100;
+    const legs = bs.map(b => ({ ...b, stake: (T * (1 / b.price) / inv).toFixed(2) }));
+    opps.push({
+      type: 'ARB', kind: 'h2h', sport: lst[0].sport, event: lst[0].event, start: lst[0].start, market: 'h2h', player: null,
+      legs: legs.map(l => ({ book: l.book, side: l.side, line: null, price: l.price, stake: +l.stake })),
+      book1: legs[0].book, leg1: `${legs[0].side} @ ${legs[0].price.toFixed(2)}`, stake1: legs[0].stake,
+      book2: legs.slice(1).map(l => l.book).join(' / '),
+      leg2: legs.slice(1).map(l => `${l.side} @ ${l.price.toFixed(2)} ($${l.stake})`).join(' / '), stake2: '',
+      width: 0, values: 0, missPct: +prof.toFixed(2), hitPct: +prof.toFixed(2), be: 0, push: false
+    });
+  }
+  const best = dedupe(opps, cfg.perKey ?? 1);
+  best.sort((a, b) => (a.type !== 'ARB') - (b.type !== 'ARB') ||
+    (a.type === 'ARB' ? b.missPct - a.missPct : score(b) - score(a)));
+  for (const o of best) o.id = hashStr([o.type, o.event, o.start, o.market, o.player, ...o.legs.map(l => [l.book, l.side, l.line, l.price].join('|'))].join('~'));
+  return best;
+  return opps;
+}
+
+// ---------------------------------------------------------- Odds API
+let remaining = null;
+async function api(path, params, key) {
+  const u = new URL(BASE + path);
+  for (const [k, v] of Object.entries({ ...params, apiKey: key, oddsFormat: 'decimal' })) u.searchParams.set(k, v);
+  const r = await fetch(u);
+  const rem = r.headers.get('x-requests-remaining');
+  if (rem != null) remaining = rem;
+  if (!r.ok) throw new Error(`HTTP ${r.status} ${(await r.text().catch(() => '')).slice(0, 120)}`);
+  return r.json();
+}
+function parseEvent(ev, offers) {
+  const name = `${ev.home_team} v ${ev.away_team}`;
+  for (const bm of ev.bookmakers || []) for (const mk of bm.markets || []) {
+    if (mk.key === 'spreads') continue;
+    for (const o of mk.outcomes || []) {
+      offers.push({
+        book: bm.title, bk: bkey(bm.title), gkey: gameKey(ev.home_team, ev.away_team, ev.commence_time), src: 'odds', sport: ev.sport_key,
+        event: name, eventKey: ev.id, start: ev.commence_time, market: canon(mk.key),
+        player: o.description || null,
+        side: (o.name === 'Over' || o.name === 'Under') ? o.name.toLowerCase() : o.name,
+        line: o.point ?? null, price: +o.price
+      });
+    }
+  }
+}
+async function fetchOffers(cfg, errors, notes) {
+  const offers = [];
+  const common = cfg.books.length ? { bookmakers: cfg.books.join(',') } : { regions: 'au' };
+  for (const [sport, item] of Object.entries(cfg.scan)) {
+    const games = item.markets.filter(m => GAMEKEYS.includes(m));
+    const props = item.markets.filter(m => !GAMEKEYS.includes(m));
+    const sel = item.games && item.games.length ? new Set(item.games) : null;
+    try {
+      if (games.length) {
+        const d = await api(`/sports/${sport}/odds`, { ...common, markets: games.join(',') }, cfg.key);
+        const gd = d.filter(ev => !sel || sel.has(ev.id));
+        gd.forEach(ev => parseEvent(ev, offers));
+        notes.push(`${item.label}: ${gd.length} game${gd.length === 1 ? '' : 's'} returned for ${games.map(m => LABELS[m] || m).join(' / ')}.`);
+      }
+      if (props.length) {
+        let evs = await api(`/sports/${sport}/events`, {}, cfg.key);
+        const now = Date.now();
+        evs = evs.filter(e => Date.parse(e.commence_time) > now)
+                 .sort((a, b) => a.commence_time.localeCompare(b.commence_time));
+        if (sel) {
+          evs = evs.filter(e => sel.has(e.id));
+          if (!evs.length) errors.push(`${item.label}: none of your selected games are upcoming any more - reselect games.`);
+        } else evs = evs.slice(0, cfg.maxEv);
+        const empty = [];
+        for (const e of evs) {
+          const d = await api(`/sports/${sport}/events/${e.id}/odds`, { ...common, markets: props.join(',') }, cfg.key);
+          const before = offers.length;
+          parseEvent(d, offers);
+          if (offers.length === before) empty.push(`${e.away_team} @ ${e.home_team}`);
+        }
+        notes.push(`${item.label}: asked for ${evs.length} game${evs.length === 1 ? '' : 's'}, ${evs.length - empty.length} had player prop lines.` +
+          (empty.length ? ` No prop lines posted yet for: ${empty.join('; ')}.` : ''));
+      }
+    } catch (ex) { errors.push(`${item.label}: ${ex.message}`); }
+  }
+  return offers;
+}
+function demoOffers() {
+  const t = new Date(Date.now() + 2 * 864e5).toISOString(), ev = 'Dallas Cowboys v New York Giants';
+  const o = [];
+  const add = (book, market, player, side, line, price) =>
+    o.push({ book, event: ev, eventKey: 'd1', start: t, market, player, side, line, price });
+  add('Sportsbet', 'player_pass_yds', 'Dak Prescott', 'over', 279.5, 1.90);
+  add('TAB', 'player_pass_yds', 'Dak Prescott', 'under', 290.5, 1.87);
+  add('Ladbrokes', 'player_pass_yds', 'Dak Prescott', 'under', 284.5, 1.91);
+  add('Neds', 'player_pass_yds', 'Dak Prescott', 'over', 281.5, 1.89);
+  add('Bet365', 'player_pass_yds', 'Dak Prescott', 'over', 285.5, 2.05);
+  add('PointsBet', 'player_pass_yds', 'Dak Prescott', 'under', 285.5, 2.02);
+  add('Sportsbet', 'h2h', null, 'Dallas Cowboys', null, 1.62);
+  add('TAB', 'h2h', null, 'New York Giants', null, 2.55);
+  return o;
+}
+
+
+
+// ---------------------------------------------------------- RapidOddsAPI
+const RAPID_SPORT = { americanfootball_nfl: 'NFL', basketball_nba: 'NBA', basketball_nbl: 'NBL' };
+const RAPID_FEEDS = ['Bet365', 'Sportsbet', 'TAB', 'Pointsbet', 'Ladbrokes', 'Unibet', 'Betr', 'BetRight', 'PalmerBet', 'NextBet', 'PickleBet', 'Dabble'];
+const RAPID_FEEDS_DEF = ['Bet365', 'Sportsbet', 'TAB', 'Pointsbet', 'Ladbrokes'];
+let RCACHE = {};
+let RAPID_TIMEOUT_MS = 30000;
+async function rapidGet(sport, markets, books, key) {
+  const u = new URL('https://api.rapidoddsapi.com/sports/' + encodeURIComponent(sport) + '/markets');
+  u.searchParams.set('api_key', key);
+  markets.forEach(m => u.searchParams.append('market_type', m));
+  books.forEach(b => u.searchParams.append('bookmaker', b));
+  let r;
+  const ctl = new AbortController(), timer = setTimeout(() => ctl.abort(), RAPID_TIMEOUT_MS);
+  try { r = await fetch(u, { signal: ctl.signal }); }
+  catch (e) {
+    clearTimeout(timer);
+    if (e && e.name === 'AbortError') { const err = new Error(`No answer within ${RAPID_TIMEOUT_MS / 1000}s.`); err.fatal = true; throw err; }
+    const err = new Error('The browser could not reach RapidOddsAPI. Most likely their server does not allow requests from a web page (CORS), or your network blocks api.rapidoddsapi.com.');
+    err.fatal = true; throw err;
+  }
+  clearTimeout(timer);
+  if ([401, 403, 404, 429].includes(r.status)) {
+    const msg = { 401: 'Invalid RapidOddsAPI key.', 403: 'RapidOddsAPI subscription is not active.', 404: 'Sport not found on RapidOddsAPI.', 429: 'Out of RapidOddsAPI credits or rate limited.' }[r.status];
+    const err = new Error(msg); err.fatal = true; throw err;
+  }
+  if (!r.ok) { const body = (await r.text().catch(() => '')).replace(/\s+/g, ' ').slice(0, 160); return { games: [], _err: `HTTP ${r.status} ${body}` }; }
+  try { return await r.json(); } catch (e) { return { games: [], _err: 'Reply was not valid JSON' }; }
+}
+function parseRapid(g, offers, sport) {
+  const gm = g.game;
+  let start = gm.commence_time || '';
+  if (start && !/(Z|[+-]\d\d:?\d\d)$/i.test(start)) start += 'Z';   // Rapid sends UTC without the Z
+  const name = `${gm.home_team} v ${gm.away_team}`;
+  for (const bm of g.bookmakers || []) for (const mk of bm.markets || []) {
+    const market = canon(mk.key);
+    for (const o of mk.outcomes || []) {
+      offers.push({
+        book: bm.name, bk: bkey(bm.name), gkey: gameKey(gm.home_team, gm.away_team, start), src: 'rapid', sport,
+        event: name, eventKey: null, start, market, player: o.player_name || null,
+        side: (o.name === 'Over' || o.name === 'Under') ? o.name.toLowerCase() : o.name,
+        line: o.point ?? null, price: +o.price
+      });
+    }
+  }
+}
+async function fetchRapid(cfg, errors, notes) {
+  const offers = [];
+  if (!cfg.rbooks.length) { errors.push('RapidOddsAPI: tick at least one bookmaker feed in Settings.'); return offers; }
+  for (const [sport, item] of Object.entries(cfg.scan)) {
+    const rid = RAPID_SPORT[sport];
+    if (!rid) { notes.push(`RapidOddsAPI: ${item.label} isn't covered by Rapid, skipped.`); continue; }
+    const tm = item.teams && item.teams.length ? item.teams : (item.games && item.games.length ? teamsFor(sport, item.games) : []);
+    const sel = tm.length ? new Set(tm) : null;
+    const summary = [], missing = [];
+    for (const m of item.markets) {
+      const cands = [...new Set([RCACHE[rid + '|' + m], ...(RAPID_CAND[m] || [m])].filter(Boolean))];
+      let hit = null, lastErr = '';
+      for (const c of cands) {
+        $('meta').textContent = `Scanning RapidOddsAPI: ${item.label} ${LABELS[m] || m} (${c})...`;
+        let d;
+        try { d = await rapidGet(rid, [c], cfg.rbooks, cfg.rkey); }
+        catch (ex) { if (ex.fatal) { errors.push(`RapidOddsAPI: ${ex.message}`); return offers; } continue; }
+        if (d.games && d.games.length) { hit = { c, games: d.games }; break; }
+        if (d._err) lastErr = `${c}: ${d._err}`;
+      }
+      if (!hit) { missing.push(`${LABELS[m] || m} (tried ${cands.join(', ')}${lastErr ? '; Rapid said ' + lastErr : ''})`); continue; }
+      RCACHE[rid + '|' + m] = hit.c;
+      let games = hit.games;
+      if (sel) games = games.filter(g => sel.has(norm(g.game.home_team) + '|' + norm(g.game.away_team)));
+      if (sel && !games.length) { missing.push(`${LABELS[m] || m} (Rapid has ${hit.games.map(g => g.game.away_team + ' @ ' + g.game.home_team).join('; ')} but none matched your ticked games by team name)`); continue; }
+      games.forEach(g => parseRapid(g, offers, sport));
+      summary.push(`${LABELS[m] || m}: ${games.length} game${games.length === 1 ? '' : 's'}`);
+    }
+    try { localStorage.setItem('arbscan_rkeys', JSON.stringify(RCACHE)); } catch (e) {}
+    if (summary.length) notes.push(`RapidOddsAPI ${item.label}: ${summary.join('; ')}.`);
+    if (missing.length) notes.push(`RapidOddsAPI ${item.label}: no data for ${missing.join('; ')}. Either no lines are posted yet or Rapid uses a different key; put the right key in "Other market keys".`);
+  }
+  return offers;
+}
+function drawFeeds() {
+  let chosen;
+  try { chosen = new Set(JSON.parse(localStorage.getItem('arbscan_rfeeds') || 'null') || RAPID_FEEDS_DEF); } catch (e) { chosen = new Set(RAPID_FEEDS_DEF); }
+  $('rblist').innerHTML = RAPID_FEEDS.map(f => `<label><input type="checkbox" value="${f}" ${chosen.has(f) ? 'checked' : ''}> ${f}</label>`).join('');
+  updFeeds();
+}
+function feeds() { return [...$('rblist').querySelectorAll('input:checked')].map(i => i.value); }
+function updFeeds() {
+  const f = feeds();
+  $('rbsum').textContent = f.length ? `${f.length} feed${f.length > 1 ? 's' : ''}: ${f.join(', ')}` : 'Select feeds';
+  try { localStorage.setItem('arbscan_rfeeds', JSON.stringify(f)); } catch (e) {}
+  touchSettings();
+  drawChips();
+}
+
+
+// ---------------------------------------------------------- bookmaker exclusions
+const KNOWN_BOOKS = ['Bet365', 'BlueBet', 'Betr', 'BetRight', 'Boombet', 'Dabble', 'Ladbrokes', 'Neds', 'NextBet', 'PalmerBet',
+  'PickleBet', 'PlayUp', 'Pointsbet', 'Sportsbet', 'TAB', 'TABtouch', 'Unibet'];
+let EXCL = null;            // Set of normalised book keys
+let SEEN_BOOKS = {};        // bk -> display name, from scans
+function loadExcl() {
+  let a = null;
+  try { a = JSON.parse(localStorage.getItem('arbscan_excl') || 'null'); } catch (e) {}
+  EXCL = new Set(a || ['unibet']);       // first run: Unibet excluded by default
+}
+function saveExcl() { try { localStorage.setItem('arbscan_excl', JSON.stringify([...EXCL])); } catch (e) {} touchSettings(); }
+function drawExcl() {
+  const all = new Map(KNOWN_BOOKS.map(b => [bkey(b), b]));
+  for (const [k, n] of Object.entries(SEEN_BOOKS)) if (!all.has(k)) all.set(k, n);
+  for (const k of EXCL) if (!all.has(k)) all.set(k, k);
+  const items = [...all.entries()].sort((a, b) => a[1].localeCompare(b[1]));
+  $('exlist').innerHTML = items.map(([k, n]) =>
+    `<label><input type="checkbox" value="${esc(k)}" ${EXCL.has(k) ? 'checked' : ''}> ${esc(n)}</label>`).join('');
+  updExcl(false);
+}
+function updExcl(fromUser) {
+  if (fromUser) { EXCL = new Set([...$('exlist').querySelectorAll('input:checked')].map(i => i.value)); saveExcl(); }
+  const names = [...EXCL].map(k => { const el = $('exlist').querySelector(`input[value="${k}"]`); return el ? el.parentElement.textContent.trim() : k; });
+  $('exsum').textContent = names.length ? 'Excluding: ' + names.join(', ') : 'None excluded';
+}
+
+// ---------------------------------------------------------- catalog & scan list
+const GAMEKEYS = ['h2h', 'totals'];
+const GAME_MKTS = [['h2h', 'Winner (head to head)'], ['totals', 'Total points / runs']];
+const NBA_MKTS = [['player_points', 'Points'], ['player_rebounds', 'Rebounds'], ['player_assists', 'Assists'],
+  ['player_threes', 'Threes made'], ['player_points_rebounds_assists', 'Points + Rebounds + Assists'],
+  ['player_points_rebounds', 'Points + Rebounds'], ['player_points_assists', 'Points + Assists'],
+  ['player_rebounds_assists', 'Rebounds + Assists']];
+const NBA_DEF = ['player_points', 'player_rebounds', 'player_assists'];
+const CRICKET = [['cricket_big_bash', 'Cricket - Big Bash'], ['cricket_ipl', 'Cricket - IPL'],
+  ['cricket_international_t20', 'Cricket - International T20'], ['cricket_odi', 'Cricket - ODI'],
+  ['cricket_test_match', 'Cricket - Test']];
+const CATALOG = {
+  americanfootball_nfl: { label: 'NFL', m: [['player_pass_yds', 'Passing yards'], ['player_reception_yds', 'Receiving yards'],
+    ['player_rush_yds', 'Rushing yards'], ['player_receptions', 'Receptions'], ['player_pass_tds', 'Passing TDs'],
+    ['player_pass_completions', 'Pass completions'], ['player_rush_reception_yds', 'Rush + receiving yards']],
+    def: ['player_pass_yds', 'player_reception_yds', 'player_rush_yds'] },
+  basketball_nba: { label: 'NBA', m: NBA_MKTS, def: NBA_DEF },
+  basketball_nbl: { label: 'NBL', m: NBA_MKTS, def: NBA_DEF }
+};
+for (const [k, l] of CRICKET) CATALOG[k] = { label: l, m: [], def: [], game: true };
+const LABELS = {};
+for (const c of Object.values(CATALOG)) c.m.forEach(([k, l]) => LABELS[k] = l);
+GAME_MKTS.forEach(([k, l]) => LABELS[k] = l);
+
+let SCAN = {};
+function sportLabel(k) { return CATALOG[k]?.label || (SPORT_EXTRA[k] || k); }
+const SPORT_EXTRA = {};
+
+function fillSports() {
+  const sel = $('sport'), cur = sel.value;
+  let html = '<optgroup label="Main">' + ['americanfootball_nfl', 'basketball_nba', 'basketball_nbl']
+    .map(k => `<option value="${k}">${CATALOG[k].label}</option>`).join('') + '</optgroup>';
+  html += '<optgroup label="Cricket">' + CRICKET.map(([k, l]) => `<option value="${k}">${esc(l)}</option>`).join('') + '</optgroup>';
+  const extra = Object.entries(SPORT_EXTRA);
+  if (extra.length) html += '<optgroup label="From API">' + extra.map(([k, l]) => `<option value="${esc(k)}">${esc(l)}</option>`).join('') + '</optgroup>';
+  sel.innerHTML = html;
+  if (cur) sel.value = cur;
+}
+function drawMarkets() {
+  const sport = $('sport').value, c = CATALOG[sport];
+  const list = [...(c ? c.m : []), ...GAME_MKTS];
+  const checked = new Set(SCAN[sport] ? SCAN[sport].markets : (c ? (c.game ? ['h2h'] : c.def) : ['h2h']));
+  $('mklist').innerHTML = list.map(([k, l]) =>
+    `<label><input type="checkbox" value="${k}" ${checked.has(k) ? 'checked' : ''}> ${esc(l)}</label>`).join('');
+  $('note').textContent = (c && c.game) || !c
+    ? 'Cricket player runs/performance props are not offered by The Odds API; only match winner and totals can be scanned here.' : '';
+  updSum();
+  drawGames();
+}
+function updSum() {
+  const n = $('mklist').querySelectorAll('input:checked').length;
+  $('mksum').textContent = n ? `${n} selected` : 'Select markets';
+}
+function addToScan() {
+  const sport = $('sport').value;
+  const keys = [...$('mklist').querySelectorAll('input:checked')].map(i => i.value).concat(csv($('extra').value));
+  if (!keys.length) return;
+  const games = [...$('gmlist').querySelectorAll('input:checked')].map(i => i.value);
+  SCAN[sport] = { label: sportLabel(sport), markets: [...new Set(keys)], games, teams: teamsFor(sport, games) };
+  $('extra').value = '';
+  saveScan(); drawChips();
+}
+
+// If this sport is already in the scan list, keep it in step with the ticks (no need to click Add again).
+function teamsFor(sport, ids) {
+  const list = (GAMES[sport] && GAMES[sport].list) || [];
+  return ids.map(id => { const g = list.find(x => x.id === id); return g ? norm(g.home) + '|' + norm(g.away) : null; }).filter(Boolean);
+}
+function syncTicks() {
+  const sport = $('sport').value;
+  if (!SCAN[sport]) return;
+  const mk = [...$('mklist').querySelectorAll('input:checked')].map(i => i.value);
+  const keep = SCAN[sport].markets.filter(m => !$('mklist').querySelector(`input[value="${m}"]`)); // custom keys
+  if (mk.length || keep.length) SCAN[sport].markets = [...new Set([...mk, ...keep])];
+  if (GAMES[sport]) { SCAN[sport].games = [...$('gmlist').querySelectorAll('input:checked')].map(i => i.value); SCAN[sport].teams = teamsFor(sport, SCAN[sport].games); }
+  saveScan(); drawChips();
+}
+function drawChips() {
+  const ents = Object.entries(SCAN);
+  $('chips').innerHTML = ents.length ? ents.map(([k, v]) =>
+    `<span class="chip">${esc(v.label)} (${v.games && v.games.length ? v.games.length + ' game' + (v.games.length > 1 ? 's' : '') : 'all games'}): ${v.markets.map(m => esc(LABELS[m] || m)).join(', ')}<button data-rm="${esc(k)}" title="Remove">x</button></span>`).join('')
+    : '<span class="mut">Scan list is empty. Pick a sport and markets, then Add to scan list.</span>';
+  // rough credit estimate per scan (1 region)
+  const maxEv = +$('maxev').value || 8;
+  let cost = 0;
+  for (const v of Object.values(SCAN)) {
+    const g = v.markets.filter(m => GAMEKEYS.includes(m)).length, p = v.markets.length - g;
+    const ng = v.games && v.games.length ? v.games.length : maxEv;
+    cost += g + p * ng;
+  }
+  let txt = '';
+  if (ents.length && $('srcOdds').checked) txt += `The Odds API: up to ${cost} credits per scan (1 per market per game). `;
+  if (ents.length && $('srcRapid').checked) {
+    let rc = 0; const groups = Math.ceil(feeds().length / 5) || 1;
+    for (const [k, v] of Object.entries(SCAN)) if (RAPID_SPORT[k]) rc += v.markets.length * groups;
+    txt += `RapidOddsAPI: about ${rc} credit${rc === 1 ? '' : 's'} per scan (per market, whole slate, not per game).`;
+  }
+  $('cost').textContent = txt;
+}
+function saveScan() { try { localStorage.setItem('arbscan_list', JSON.stringify(SCAN)); } catch (e) {} touchSettings(); }
+function loadScan() {
+  try { SCAN = JSON.parse(localStorage.getItem('arbscan_list') || 'null'); } catch (e) { SCAN = null; }
+  if (!SCAN) {
+    SCAN = {};
+    for (const k of ['americanfootball_nfl', 'basketball_nba', 'basketball_nbl'])
+      SCAN[k] = { label: CATALOG[k].label, markets: [...CATALOG[k].def] };
+  }
+  try { Object.assign(SPORT_EXTRA, JSON.parse(localStorage.getItem('arbscan_sports') || '{}')); } catch (e) {}
+}
+async function loadSports() {
+  const key = $('key').value.trim();
+  if (!key) { $('note').textContent = 'Paste your API key first.'; return; }
+  try {
+    const d = await api('/sports', {}, key);
+    for (const sp of d) if (sp.active && !sp.has_outrights && !CATALOG[sp.key]) SPORT_EXTRA[sp.key] = sp.title + ' (' + sp.group + ')';
+    try { localStorage.setItem('arbscan_sports', JSON.stringify(SPORT_EXTRA)); } catch (e) {}
+    fillSports(); drawMarkets();
+    $('note').textContent = 'Loaded ' + Object.keys(SPORT_EXTRA).length + ' more competitions (see "From API" in the dropdown).';
+  } catch (ex) { $('note').textContent = 'Could not load sports: ' + ex.message; }
+}
+
+
+// ---------------------------------------------------------- game picker
+const GAMES = {};   // sport -> [{id,label,start}]
+function gameLabel(e) {
+  const d = new Date(e.commence_time);
+  return `${e.away_team} @ ${e.home_team} - ${d.toLocaleString([], { weekday: 'short', day: 'numeric', month: 'short', hour: 'numeric', minute: '2-digit' })}`;
+}
+async function loadGames(force) {
+  const sport = $('sport').value, key = $('key').value.trim();
+  if (!key) { $('gmlist').innerHTML = '<span class="mut">Paste your API key in Settings to load games.</span>'; return; }
+  if (!force && GAMES[sport] && Date.now() - GAMES[sport].at < 600e3) { drawGames(); return; }
+  $('gmlist').innerHTML = '<span class="mut">Loading games...</span>';
+  try {
+    const evs = (await api(`/sports/${sport}/events`, {}, key))
+      .filter(e => Date.parse(e.commence_time) > Date.now())
+      .sort((a, b) => a.commence_time.localeCompare(b.commence_time));
+    GAMES[sport] = { at: Date.now(), list: evs.map(e => ({ id: e.id, label: gameLabel(e), home: e.home_team, away: e.away_team })) };
+  } catch (ex) { $('gmlist').innerHTML = `<span class="err">Could not load games: ${esc(ex.message)}</span>`; return; }
+  drawGames();
+}
+function drawGames() {
+  const sport = $('sport').value, g = GAMES[sport];
+  const chosen = new Set((SCAN[sport] && SCAN[sport].games) || []);
+  if (!g) { $('gmlist').innerHTML = '<span class="mut">Paste your API key, then pick a sport to load its games.</span>'; updGmSum(); return; }
+  $('gmlist').innerHTML = `<div class="row" style="margin:0 0 4px"><button class="btn sm" data-g="all">Tick all</button><button class="btn sm" data-g="none">Clear</button><button class="btn sm" data-g="reload">Reload</button></div>` +
+    (g.list.length ? g.list.map(x => `<label><input type="checkbox" value="${esc(x.id)}" ${chosen.has(x.id) ? 'checked' : ''}> ${esc(x.label)}</label>`).join('')
+      : '<span class="mut">No upcoming games found for this competition.</span>');
+  updGmSum();
+}
+function updGmSum() {
+  const n = $('gmlist').querySelectorAll('input:checked').length;
+  $('gmsum').textContent = n ? `${n} game${n > 1 ? 's' : ''} ticked` : 'All upcoming games (none ticked)';
+}
+
+// ---------------------------------------------------------- UI
+let RESULT = null, FILTER = 'ALL', timer = null;
+function readCfg() {
+  return {
+    key: $('key').value.trim(), rkey: $('rkey').value.trim(), rbooks: feeds(), useOdds: $('srcOdds').checked, useRapid: $('srcRapid').checked, scan: SCAN, books: csv($('books').value), maxEv: +$('maxev').value || 8,
+    stake: +$('stake').value || 100, perKey: Math.max(0, +$('perkey').value || 0), minWidth: +$('minw').value || 0, maxLoss: +$('maxloss').value || 0
+  };
+}
+function save() {
+  try {
+    const s = {}; document.querySelectorAll('input[id]:not([type=file]):not([data-nosave])').forEach(i => s[i.id] = i.type === 'checkbox' ? i.checked : i.value);
+    localStorage.setItem('arbscan', JSON.stringify(s));
+  } catch (e) {}
+  touchSettings();
+}
+function load() {
+  try {
+    const s = JSON.parse(localStorage.getItem('arbscan') || '{}');
+    for (const [k, v] of Object.entries(s)) { try { const el = $(k); if (!el || el.type === 'file') continue; if (el.type === 'checkbox') el.checked = !!v; else el.value = v; } catch (e) {} }
+  } catch (e) {}
+}
+async function scan(demo) {
+  const cfg = readCfg(), errors = [], notes = [];
+  save();
+  $('meta').textContent = 'Scanning...';
+  $('list').innerHTML = ''; $('notes').innerHTML = ''; $('errs').innerHTML = '';
+  let offers = [];
+  try {
+  if (demo) offers = demoOffers();
+  else if (!cfg.useOdds && !cfg.useRapid) errors.push('Tick at least one data source.');
+  else if (!Object.keys(cfg.scan).length) errors.push('Add at least one sport to the scan list.');
+  else {
+    if (cfg.useOdds) {
+      if (!cfg.key) errors.push('Paste your Odds API key in Settings first (or untick The Odds API).');
+      else offers = offers.concat(await fetchOffers(cfg, errors, notes));
+    }
+    if (cfg.useRapid) {
+      if (!cfg.rkey) errors.push('Paste your RapidOddsAPI key in Settings first (or untick RapidOddsAPI).');
+      else offers = offers.concat(await fetchRapid(cfg, errors, notes));
+    }
+  }
+  } catch (ex) { errors.push('Unexpected error: ' + (ex && ex.message || ex)); }
+  for (const o of offers) { const k = o.bk || bkey(o.book); if (!SEEN_BOOKS[k]) SEEN_BOOKS[k] = o.book; }
+  const dropped = {};
+  offers = offers.filter(o => {
+    const k = o.bk || bkey(o.book);
+    if (EXCL.has(k)) { dropped[o.book] = (dropped[o.book] || 0) + 1; return false; }
+    return true;
+  });
+  drawExcl();
+  const dtxt = Object.entries(dropped).map(([b, n]) => `${b} (${n})`).join(', ');
+  const seen = {};
+  for (const o of offers) seen[o.book] = (seen[o.book] || 0) + 1;
+  const seenTxt = Object.entries(seen).sort((a, b) => b[1] - a[1]).map(([b, n]) => `${b} (${n})`).join(', ');
+  if (offers.length) notes.push('Bookmakers in this scan: ' + seenTxt + '.');
+  if (dtxt) notes.push('Excluded (ignored): ' + dtxt + '.');
+  RESULT = { opps: findOpps(offers, cfg), n: offers.length, errors, notes, at: new Date().toLocaleTimeString() };
+  draw();
+}
+function r2(x) { return Math.round(x * 100) / 100; }
+function hashStr(s) { let h = 5381; for (let i = 0; i < s.length; i++) h = ((h << 5) + h + s.charCodeAt(i)) | 0; return (h >>> 0).toString(36); }
+const money = n => (n < 0 ? '-' : n > 0 ? '+' : '') + '$' + Math.abs(n).toFixed(2);
+const plain = n => '$' + n.toFixed(2);
+const sgn = n => n > 0.004 ? 'pos' : n < -0.004 ? 'neg' : 'flat';
+const fmtDate = iso => { const d = new Date(iso); return isNaN(d) ? '' : d.toLocaleString([], { weekday: 'short', day: 'numeric', month: 'short', hour: 'numeric', minute: '2-digit' }); };
+const legLabel = (o, l) => o.kind === 'ou' ? `${l.side.toUpperCase()} ${l.line}` : l.side;
+let toastTimer = null;
+function toast(msg) {
+  const t = $('toast'); t.textContent = msg; t.classList.add('show');
+  clearTimeout(toastTimer); toastTimer = setTimeout(() => t.classList.remove('show'), 2600);
+}
+
+// ---------------------------------------------------------- stakes & scenarios
+function defaultStakes(o, T) {
+  const L = o.legs;
+  if (o.kind === 'ou') { const so = T * L[1].price / (L[0].price + L[1].price); return [r2(so), r2(T - so)]; }
+  const inv = L.reduce((a, l) => a + 1 / l.price, 0);
+  return L.map(l => r2(T * (1 / l.price) / inv));
+}
+function legOut(l, r) { const d = r - l.line; return d === 0 ? 'push' : ((l.side === 'over') === (d > 0) ? 'win' : 'lose'); }
+function scenarios(o, st) {
+  const L = o.legs, tot = st.reduce((a, b) => a + (+b || 0), 0);
+  if (o.kind !== 'ou') return L.map((l, i) => ({ name: `${l.side} wins`, pl: st[i] * l.price - tot }));
+  const lines = [...new Set(L.map(l => +l.line).filter(x => isFinite(x)))].sort((a, b) => a - b);
+  if (!lines.length) return [];
+  const reps = [{ r: lines[0] - 1, label: `${Math.ceil(lines[0]) - 1} or fewer` }];
+  lines.forEach((b, i) => {
+    if (Number.isInteger(b)) reps.push({ r: b, label: `Exactly ${b}` });
+    if (i < lines.length - 1) {
+      const lo = Math.floor(b) + 1, hi = Math.ceil(lines[i + 1]) - 1;
+      if (lo <= hi) reps.push({ r: (b + lines[i + 1]) / 2, label: lo === hi ? `Exactly ${lo}` : `${lo} to ${hi}` });
+    }
+  });
+  const top = lines[lines.length - 1];
+  reps.push({ r: top + 1, label: `${Math.floor(top) + 1} or more` });
+  return reps.map(({ r, label }) => {
+    const outs = L.map(l => legOut(l, r));
+    const back = L.reduce((a, l, i) => a + (outs[i] === 'win' ? st[i] * l.price : outs[i] === 'push' ? st[i] : 0), 0);
+    const mid = L.some((l, i) => l.side === 'over' && outs[i] === 'win') && L.some((l, i) => l.side === 'under' && outs[i] === 'win');
+    return { name: label + (mid ? ' (middle)' : ''), pl: back - tot, mid };
+  });
+}
+function scenHTML(o) {
+  return '<div class="sc">' + scenarios(o, o.legs.map(l => l.stake)).map(s =>
+    `<div class="sp"><i>${esc(s.name)}</i><b class="${sgn(s.pl)}">${money(s.pl)}</b></div>`).join('') + '</div>';
+}
+// ARB if no outcome loses, MIDDLE if some outcome wins on both sides, otherwise CUSTOM
+function classify(o) {
+  if (o.kind !== 'ou') return o.type;
+  const sc = scenarios(o, o.legs.map(l => l.stake));
+  if (!sc.length) return 'CUSTOM';
+  if (Math.min(...sc.map(x => x.pl)) > -0.05) return 'ARB';
+  return sc.some(x => x.mid) ? 'MIDDLE' : 'CUSTOM';
+}
+
+// ---------------------------------------------------------- ledger
+let BETS = [];
+// Every bet carries u (last-changed time) and deletions are remembered (TOMB) so two devices can be merged safely.
+let SNAP = {}, TOMB = {};
+const stripU = b => JSON.stringify({ ...b, u: undefined });
+function loadBets() {
+  try { BETS = JSON.parse(localStorage.getItem('arbscan_bets') || '[]'); } catch (e) { BETS = []; } if (!Array.isArray(BETS)) BETS = [];
+  try { TOMB = JSON.parse(localStorage.getItem('arbscan_tomb') || '{}') || {}; } catch (e) { TOMB = {}; }
+  SNAP = {};
+  for (const b of BETS) { if (!b.u) b.u = Date.parse(b.settledAt || b.placedAt) || 1; SNAP[b.id] = stripU(b); }
+}
+function stampBets() {
+  const now = Date.now(), ids = new Set();
+  for (const b of BETS) { ids.add(b.id); const j = stripU(b); if (SNAP[b.id] !== j) { b.u = now; SNAP[b.id] = j; } }
+  for (const id of Object.keys(SNAP)) if (!ids.has(id)) { TOMB[id] = now; delete SNAP[id]; }
+}
+function persistBets() {
+  try { localStorage.setItem('arbscan_bets', JSON.stringify(BETS)); localStorage.setItem('arbscan_tomb', JSON.stringify(TOMB)); }
+  catch (e) { toast('Could not save - browser storage unavailable'); }
+}
+function saveBets() { stampBets(); persistBets(); queueSync(); }
+const totalStake = e => e.legs.reduce((a, l) => a + l.stake, 0);
+function addBet(o) {
+  if (BETS.some(b => b.oid === o.id)) return;
+  BETS.push({
+    id: 'b' + Date.now().toString(36) + Math.random().toString(36).slice(2, 6), oid: o.id,
+    placedAt: new Date().toISOString(), type: o.type, kind: o.kind, sport: o.sport || null, event: o.event, start: o.start,
+    market: o.market, player: o.player, custom: !!o.custom,
+    legs: o.legs.map(l => ({ book: l.book, side: l.side, line: l.line, price: l.price, stake: l.stake })),
+    status: 'open', result: null, pl: null, legRes: null, settledAt: null
+  });
+  saveBets();
+}
+function removeOpenBet(oid) { BETS = BETS.filter(b => !(b.oid === oid && b.status === 'open')); saveBets(); }
+function settleBet(e, v) {
+  const tot = totalStake(e);
+  if (v.void) { e.status = 'void'; e.pl = 0; e.legRes = null; e.result = 'void'; }
+  else if (v.pl != null) { e.status = 'settled'; e.pl = r2(v.pl); e.legRes = null; e.result = 'manual'; }
+  else {
+    let res;
+    if (e.kind === 'ou') {
+      res = e.legs.map(l => l.side === 'over' ? (v.result > l.line ? 'win' : v.result === l.line ? 'push' : 'lose')
+                                              : (v.result < l.line ? 'win' : v.result === l.line ? 'push' : 'lose'));
+      e.result = v.result;
+    } else { res = e.legs.map(l => l.side === v.winner ? 'win' : 'lose'); e.result = v.winner || 'none'; }
+    const back = e.legs.reduce((a, l, i) => a + (res[i] === 'win' ? l.stake * l.price : res[i] === 'push' ? l.stake : 0), 0);
+    e.legRes = res; e.pl = r2(back - tot); e.status = 'settled';
+  }
+  e.settledAt = new Date().toISOString();
+}
+function reopenBet(e) { e.status = 'open'; e.result = null; e.pl = null; e.legRes = null; e.settledAt = null; }
+
+// ---------------------------------------------------------- scanner cards
+const oppById = id => RESULT && RESULT.opps.find(o => o.id === id);
+function kpiHTML(o) {
+  if (o.custom) {
+    const pls = scenarios(o, o.legs.map(l => l.stake)).map(x => x.pl);
+    if (!pls.length) return '';
+    const w = Math.min(...pls), b = Math.max(...pls);
+    return `<b class="${sgn(w)}">${money(w)}</b><span>worst case &middot; best ${money(b)}</span>`;
+  }
+  return o.type === 'ARB' ? `<b class="pos">+${o.missPct}%</b><span>locked in</span>` : `<b>${o.be}%</b><span>break-even hit rate</span>`;
+}
+function cardHTML(o) {
+  const e = BETS.find(b => b.oid === o.id);
+  if (e) { o.legs = e.legs.map(l => ({ ...l })); o.type = e.type; o.custom = !!e.custom; }
+  const tot = o.legs.reduce((a, l) => a + (+l.stake || 0), 0);
+  const closed = e && e.status !== 'open';
+  const sub = (o.type === 'MIDDLE' && !o.custom) ? ` &middot; window ${o.width} (${o.values} winning values)` : '';
+  const totalOK = o.kind === 'h2h' || (!o.custom && o.legs.length === 2);
+  const legsHTML = o.editing
+    ? `<div class="edrows">${o.legs.map((l, i) => `<div class="edr" data-i="${i}">
+        <input type="text" list="booklist" data-ed="book" placeholder="Bookmaker" value="${esc(l.book)}">
+        <select data-ed="side"><option value="over" ${l.side === 'over' ? 'selected' : ''}>Over</option><option value="under" ${l.side === 'under' ? 'selected' : ''}>Under</option></select>
+        <input type="number" step="0.5" data-ed="line" placeholder="Line" value="${l.line}">
+        <input type="number" step="0.01" min="1" data-ed="price" placeholder="Odds" value="${l.price}">
+        <label class="stk"><i>$</i><input type="number" min="0" step="0.01" data-ed="stake" value="${l.stake}"></label>
+        <button class="btn sm danger" data-edel="${i}" title="Remove leg">&times;</button></div>`).join('')}
+        <button class="btn sm" data-eadd>+ Add leg</button></div>`
+    : `<div class="legs">${o.legs.map((l, i) => `<div class="leg">
+        <div class="bk">${esc(l.book)}</div><div class="sel">${esc(legLabel(o, l))}</div><div class="px">@ ${(+l.price).toFixed(2)}</div>
+        <label class="stk"><i>$</i><input type="number" min="0" step="0.01" data-leg="${i}" value="${l.stake}" ${closed ? 'disabled' : ''}></label></div>`).join('')}</div>`;
+  return `<article class="opp ${e ? 'placed' : ''}" data-oid="${esc(o.id)}">
+    <div class="oh"><span class="badge ${o.type}">${o.type}</span>
+      <div class="ot"><h3>${esc(o.player || '')}${o.player ? ' &middot; ' : ''}${esc(LABELS[o.market] || o.market)}</h3>
+        <p>${esc(o.event)} &middot; ${esc(fmtDate(o.start))}${sub}</p></div>
+      <div class="kpi">${kpiHTML(o)}</div></div>
+    ${legsHTML}
+    ${scenHTML(o)}
+    <div class="of">
+      <label class="place"><input type="checkbox" data-place ${e ? 'checked' : ''} ${closed ? 'disabled' : ''}> ${closed ? 'Settled' : 'I placed this bet'}</label>
+      ${o.push && !o.custom ? '<span class="warn">whole-number line: push possible</span>' : ''}
+      ${o.kind === 'ou' && !closed ? `<button class="btn sm ghost" data-eedit>${o.editing ? 'Done' : 'Edit legs'}</button>` : ''}
+      <div class="tot">Total <label class="stk"><i>$</i><input type="number" min="0" step="1" data-tot value="${r2(tot)}" ${(closed || !totalOK || o.editing) ? 'readonly' : ''}></label></div>
+    </div></article>`;
+}
+function draw() {
+  if (!RESULT) return;
+  $('meta').textContent = `Updated ${RESULT.at} | ${RESULT.n} offers | Odds API credits left: ${remaining ?? 'n/a'}`;
+  $('errs').innerHTML = RESULT.errors.map(esc).join('<br>');
+  $('notes').innerHTML = (RESULT.notes || []).map(esc).join('<br>');
+  $('filters').innerHTML = ['ALL', 'ARB', 'MIDDLE'].map(k => `<button class="${FILTER === k ? 'on' : ''}" data-f="${k}">${k === 'ALL' ? 'All' : k === 'ARB' ? 'Arbs' : 'Middles'}</button>`).join('');
+  const L = RESULT.opps.filter(o => FILTER === 'ALL' || o.type === FILTER);
+  $('list').innerHTML = L.length ? L.map(cardHTML).join('') : '<div class="empty">Nothing found on the last scan.</div>';
+}
+function syncLedger(o) {
+  const e = BETS.find(b => b.oid === o.id && b.status === 'open');
+  if (!e) return;
+  e.legs = o.legs.map(l => ({ book: l.book, side: l.side, line: l.line, price: +l.price, stake: +l.stake || 0 }));
+  e.type = o.type; e.custom = !!o.custom;
+  saveBets(); refreshHead();
+}
+function refreshBits(card, o, updateTot) {
+  if (o.custom) o.type = classify(o);
+  const tot = o.legs.reduce((a, l) => a + (+l.stake || 0), 0);
+  if (updateTot) card.querySelector('[data-tot]').value = r2(tot);
+  card.querySelector('.sc').outerHTML = scenHTML(o);
+  const bd = card.querySelector('.badge'); bd.className = 'badge ' + o.type; bd.textContent = o.type;
+  card.querySelector('.kpi').innerHTML = kpiHTML(o);
+  syncLedger(o);
+}
+function onListInput(ev) {
+  const t = ev.target, card = t.closest('.opp'); if (!card) return;
+  const o = oppById(card.dataset.oid); if (!o) return;
+  if (t.dataset.ed !== undefined) {
+    const i = +t.closest('.edr').dataset.i, f = t.dataset.ed, L = o.legs[i];
+    if (f === 'book') L.book = t.value.trim(); else if (f === 'side') L.side = t.value; else L[f] = parseFloat(t.value) || 0;
+    if (f !== 'stake') o.custom = true;
+    refreshBits(card, o, true);
+  } else if (t.dataset.leg !== undefined) {
+    o.legs[+t.dataset.leg].stake = Math.max(0, parseFloat(t.value) || 0); refreshBits(card, o, true);
+  } else if (t.dataset.tot !== undefined && !t.readOnly) {
+    const T = Math.max(0, parseFloat(t.value) || 0);
+    defaultStakes(o, T).forEach((s, i) => { o.legs[i].stake = s; card.querySelector(`[data-leg="${i}"]`).value = s; });
+    refreshBits(card, o, false);
+  }
+}
+function onListClick(ev) {
+  const b = ev.target.closest('[data-eedit],[data-eadd],[data-edel]'); if (!b) return;
+  const card = b.closest('.opp'), o = oppById(card.dataset.oid); if (!o) return;
+  if (b.dataset.eedit !== undefined) o.editing = !o.editing;
+  else if (b.dataset.eadd !== undefined) {
+    const last = o.legs[o.legs.length - 1];
+    o.legs.push({ book: '', side: last && last.side === 'over' ? 'under' : 'over', line: last ? last.line : 0, price: 1.9, stake: 0 }); o.custom = true;
+  } else { o.legs.splice(+b.dataset.edel, 1); o.custom = true; }
+  if (o.custom) o.type = classify(o);
+  syncLedger(o);
+  card.outerHTML = cardHTML(o);
+}
+function onListChange(ev) {
+  const t = ev.target; if (t.dataset.place === undefined) return;
+  const card = t.closest('.opp'), o = oppById(card.dataset.oid); if (!o) return;
+  if (t.checked) {
+    if (o.legs.reduce((a, l) => a + (+l.stake || 0), 0) <= 0) { t.checked = false; return toast('Enter a stake first'); }
+    if (o.legs.some(l => !l.book)) { t.checked = false; return toast('Fill in the bookmaker on every leg'); }
+    addBet(o); card.classList.add('placed'); toast('Logged in My bets');
+  } else { removeOpenBet(o.id); card.classList.remove('placed'); }
+  refreshTracker();
+}
+
+
+// ---------------------------------------------------------- results from ESPN (unofficial public feed, no key)
+const ESPN_PATH = { americanfootball_nfl: 'football/nfl', basketball_nba: 'basketball/nba' };
+const NBA_SPEC = {
+  player_points: [{ label: 'PTS' }], player_rebounds: [{ label: 'REB' }], player_assists: [{ label: 'AST' }], player_threes: [{ label: '3PT' }],
+  player_points_rebounds_assists: [{ label: 'PTS' }, { label: 'REB' }, { label: 'AST' }],
+  player_points_rebounds: [{ label: 'PTS' }, { label: 'REB' }], player_points_assists: [{ label: 'PTS' }, { label: 'AST' }],
+  player_rebounds_assists: [{ label: 'REB' }, { label: 'AST' }] };
+const NFL_SPEC = {
+  player_pass_yds: [{ cat: 'passing', label: 'YDS' }], player_rush_yds: [{ cat: 'rushing', label: 'YDS' }],
+  player_reception_yds: [{ cat: 'receiving', label: 'YDS' }], player_receptions: [{ cat: 'receiving', label: 'REC' }],
+  player_pass_tds: [{ cat: 'passing', label: 'TD' }], player_pass_completions: [{ cat: 'passing', label: 'C/ATT' }],
+  player_rush_reception_yds: [{ cat: 'rushing', label: 'YDS' }, { cat: 'receiving', label: 'YDS' }] };
+const SUGG = {};            // bet id -> { v: settle input, text } or { note }
+let ESPN_CACHE = {}, AUTOCHK = false;
+const sportOf = e => e.sport || (/^player_(pass|rush|reception)/.test(e.market) ? 'americanfootball_nfl' : 'basketball_nba');
+const etDate = ms => new Intl.DateTimeFormat('en-CA', { timeZone: 'America/New_York', year: 'numeric', month: '2-digit', day: '2-digit' }).format(new Date(ms)).replace(/-/g, '');
+async function espnJson(urls) {
+  let last;
+  for (const u of urls) {
+    try { const r = await fetch(u); if (r.ok) return await r.json(); last = new Error('ESPN answered HTTP ' + r.status); }
+    catch (e) { last = new Error('Could not reach ESPN. Your browser or network may be blocking the request.'); last.fatal = true; }
+  }
+  throw last;
+}
+async function espnScoreboard(path, dt) {
+  const k = path + dt; if (ESPN_CACHE[k]) return ESPN_CACHE[k];
+  return ESPN_CACHE[k] = await espnJson([`https://site.api.espn.com/apis/site/v2/sports/${path}/scoreboard?dates=${dt}`]);
+}
+async function espnSummary(path, id) {
+  const k = path + 'S' + id; if (ESPN_CACHE[k]) return ESPN_CACHE[k];
+  return ESPN_CACHE[k] = await espnJson([`https://site.api.espn.com/apis/site/v2/sports/${path}/summary?event=${id}`,
+                                         `https://site.web.api.espn.com/apis/site/v2/sports/${path}/summary?event=${id}`]);
+}
+const teamMatch = (team, name) => { if (!team) return false; const n = norm(name); return norm(team.displayName) === n || (!!team.name && n.endsWith(norm(team.name))); };
+function sameGame(ev, h, a) {
+  const cs = (ev.competitions && ev.competitions[0] && ev.competitions[0].competitors) || [];
+  return cs.some(c => teamMatch(c.team, h)) && cs.some(c => teamMatch(c.team, a));
+}
+function sameName(ath, nm) {
+  const dn = norm(ath && (ath.displayName || ath.fullName)); if (!dn || !nm) return false;
+  if (dn === nm) return true;
+  const a = dn.split(' '), b = nm.split(' ');
+  return a[a.length - 1] === b[b.length - 1] && a[0][0] === b[0][0];
+}
+function espnStat(sum, player, market, sport) {
+  const spec = (sport === 'americanfootball_nfl' ? NFL_SPEC : NBA_SPEC)[market];
+  if (!spec) return { unsupported: true };
+  const nm = norm(player); let total = 0, seen = false, inBox = false;
+  for (const t of (sum.boxscore && sum.boxscore.players) || []) for (const cat of t.statistics || []) for (const a of cat.athletes || []) {
+    if (!sameName(a.athlete, nm)) continue;
+    inBox = true;
+    const labels = (cat.labels || cat.names || []).map(x => String(x).toUpperCase());
+    const cn = String(cat.name || cat.type || '').toLowerCase();
+    for (const sp of spec) {
+      if (sp.cat && cn !== sp.cat) continue;
+      const i = labels.indexOf(sp.label); if (i < 0 || !a.stats) continue;
+      const v = parseFloat(String(a.stats[i]).split(/[-/]/)[0]);
+      if (!isNaN(v)) { total += v; seen = true; }
+    }
+  }
+  return seen ? { value: total } : { missing: inBox ? 'stat' : 'player' };
+}
+async function suggestFor(e) {
+  const sport = sportOf(e), path = ESPN_PATH[sport];
+  if (!path) return { note: 'Auto results are not available for this sport. Enter the result manually.' };
+  const [h, a] = String(e.event).split(/ v /i);
+  const t0 = Date.parse(e.start);
+  const dates = [...new Set([etDate(t0 - 864e5), etDate(t0), etDate(t0 + 864e5)])];
+  let ev = null;
+  for (const dt of dates) { const sb = await espnScoreboard(path, dt); ev = (sb.events || []).find(x => sameGame(x, h, a)); if (ev) break; }
+  if (!ev) return { note: "Couldn't find this game on ESPN." };
+  if (!(ev.status && ev.status.type && ev.status.type.completed)) return { note: 'Game not finished yet.' };
+  if (e.kind === 'h2h') {
+    const w = ev.competitions[0].competitors.find(c => c.winner);
+    const leg = w && e.legs.find(l => teamMatch(w.team, l.side));
+    return leg ? { v: { winner: leg.side }, text: `ESPN final: ${w.team.displayName} won.` } : { note: 'No winner listed on ESPN yet.' };
+  }
+  const st = espnStat(await espnSummary(path, ev.id), e.player, e.market, sport);
+  if (st.unsupported) return { note: 'Auto results do not cover this market. Enter the result manually.' };
+  if (st.missing) return { note: `${e.player} is not in the ESPN box score (did not play?). Bookmakers usually void these, so check their rules.` };
+  return { v: { result: st.value }, text: `ESPN final box score: ${e.player} had ${st.value} (${LABELS[e.market] || e.market}).` };
+}
+async function checkResults(manual) {
+  const open = BETS.filter(b => b.status === 'open' && Date.parse(b.start) && Date.now() - Date.parse(b.start) > 2 * 3600e3);
+  if (!open.length) { if (manual) $('resNote').textContent = 'None of your open bets have had time to finish yet.'; return; }
+  $('resNote').textContent = 'Checking ESPN for results...';
+  let found = 0, fatal = null;
+  for (const e of open) {
+    try { const sg = await suggestFor(e); SUGG[e.id] = sg; if (sg.v) found++; }
+    catch (ex) { if (ex.fatal) { fatal = ex.message; break; } SUGG[e.id] = { note: 'ESPN lookup failed: ' + ex.message }; }
+  }
+  $('resNote').textContent = fatal || (found ? `${found} result${found > 1 ? 's' : ''} found. Check and settle below.` : 'No finished results found yet.');
+  drawBets();
+}
+function applyAllSugg() {
+  let n = 0;
+  for (const e of BETS.filter(b => b.status === 'open')) { const sg = SUGG[e.id]; if (sg && sg.v) { settleBet(e, sg.v); delete SUGG[e.id]; n++; } }
+  saveBets(); refreshTracker(); toast(`Settled ${n} bet${n === 1 ? '' : 's'}`);
+}
+
+// ---------------------------------------------------------- My bets tab
+function betHTML(e) {
+  const tot = totalStake(e), open = e.status === 'open';
+  const legs = e.legs.map((l, i) => `<span>${esc(l.book)} &middot; ${esc(e.kind === 'ou' ? l.side.toUpperCase() + ' ' + l.line : l.side)} @ ${l.price.toFixed(2)} &middot; ${plain(l.stake)}${e.legRes ? ' &middot; ' + e.legRes[i] : ''}</span>`).join('');
+  const head = `<div class="bh"><span class="badge ${e.type}">${e.type}</span>
+    <b>${e.player ? esc(e.player) + ' &middot; ' : ''}${esc(LABELS[e.market] || e.market)}</b>
+    <span class="mu">${esc(e.event)} &middot; ${esc(fmtDate(e.start))}</span><span class="amt">${plain(tot)} staked</span></div><div class="bl">${legs}</div>`;
+  if (open) {
+    const input = e.kind === 'ou'
+      ? `<input type="number" step="0.5" data-res placeholder="Final result, e.g. 283">`
+      : `<select data-win><option value="">Who won?</option>${e.legs.map(l => `<option value="${esc(l.side)}">${esc(l.side)}</option>`).join('')}<option value="none">None / draw</option></select>`;
+    const sg = SUGG[e.id];
+    const sgHTML = sg ? (sg.v ? `<div class="sugg"><span>${esc(sg.text)}</span><button class="btn sm pri" data-act="applysug">Settle with ${esc(sg.v.result ?? sg.v.winner)}</button></div>` : `<div class="mu" style="margin:0 0 8px">${esc(sg.note)}</div>`) : '';
+    return `<div class="bet" data-id="${e.id}">${head}${sgHTML}<div class="bs">${input}<button class="btn sm pri" data-act="settle">Settle</button>
+      <span class="sep">or</span><input type="number" step="0.01" data-man placeholder="P/L in $"><button class="btn sm" data-act="manual">Save P/L</button>
+      <button class="btn sm" data-act="void">Void</button><button class="btn sm danger" data-act="del">Delete</button></div></div>`;
+  }
+  const res = e.status === 'void' ? 'Voided' : e.result === 'manual' ? 'Entered manually' : `Result: ${esc(e.result)}`;
+  return `<div class="bet" data-id="${e.id}">${head}<div class="br"><span class="mu">${res}</span><b class="${sgn(e.pl)}">${money(e.pl)}</b>
+    <button class="btn sm" data-act="reopen">Reopen</button><button class="btn sm danger" data-act="del">Delete</button></div></div>`;
+}
+function drawBets() {
+  const open = BETS.filter(b => b.status === 'open').sort((a, b) => String(a.start).localeCompare(String(b.start)));
+  const done = BETS.filter(b => b.status !== 'open').sort((a, b) => String(b.start || b.placedAt).localeCompare(String(a.start || a.placedAt)));
+  $('betsOpen').innerHTML = open.length ? open.map(betHTML).join('') : '<div class="empty">No open bets. Tick "I placed this bet" on a scanner card to log it.</div>';
+  const nSug = open.filter(b => SUGG[b.id] && SUGG[b.id].v).length;
+  $('applyAll').hidden = nSug < 2; $('applyAll').textContent = `Settle all ${nSug} found`;
+  $('betsDone').innerHTML = done.length ? done.map(betHTML).join('') : '<div class="empty">Settled bets will show here.</div>';
+}
+function onBetsClick(ev) {
+  const b = ev.target.closest('[data-act]'); if (!b) return;
+  const row = b.closest('.bet'), e = BETS.find(x => x.id === row.dataset.id); if (!e) return;
+  const act = b.dataset.act;
+  if (act === 'applysug') {
+    const sg = SUGG[e.id]; if (!sg || !sg.v) return;
+    settleBet(e, sg.v); delete SUGG[e.id];
+  } else if (act === 'settle') {
+    if (e.kind === 'ou') {
+      const v = parseFloat(row.querySelector('[data-res]').value);
+      if (isNaN(v)) return toast('Enter the final result first');
+      settleBet(e, { result: v });
+    } else {
+      const w = row.querySelector('[data-win]').value;
+      if (!w) return toast('Pick who won first');
+      settleBet(e, { winner: w });
+    }
+  } else if (act === 'manual') {
+    const v = parseFloat(row.querySelector('[data-man]').value);
+    if (isNaN(v)) return toast('Enter the profit or loss in $');
+    settleBet(e, { pl: v });
+  } else if (act === 'void') settleBet(e, { void: true });
+  else if (act === 'reopen') reopenBet(e);
+  else if (act === 'del') { if (!confirm('Delete this bet from your records?')) return; BETS = BETS.filter(x => x.id !== e.id); }
+  saveBets(); refreshTracker(); draw();
+}
+
+// ---------------------------------------------------------- Results tab
+let PERIOD = 'all';
+const betTime = e => Date.parse(e.start) || Date.parse(e.settledAt) || Date.parse(e.placedAt) || 0;
+function statsFor(period) {
+  const cutoff = period === 'all' ? 0 : Date.now() - (+period) * 864e5;
+  const S = BETS.filter(b => b.status === 'settled' && betTime(b) >= cutoff).sort((a, b) => betTime(a) - betTime(b));
+  const net = S.reduce((a, b) => a + b.pl, 0), staked = S.reduce((a, b) => a + totalStake(b), 0);
+  const mids = S.filter(b => b.type === 'MIDDLE' && b.legRes);
+  const hits = mids.filter(b => b.legs.some((l, i) => l.side === 'over' && b.legRes[i] === 'win') && b.legs.some((l, i) => l.side === 'under' && b.legRes[i] === 'win')).length;
+  const byType = {}, byBook = {};
+  for (const b of S) {
+    const t = byType[b.type] || (byType[b.type] = { n: 0, staked: 0, pl: 0 }); t.n++; t.staked += totalStake(b); t.pl += b.pl;
+    if (b.legRes) b.legs.forEach((l, i) => {
+      const back = b.legRes[i] === 'win' ? l.stake * l.price : b.legRes[i] === 'push' ? l.stake : 0;
+      const k = byBook[l.book] || (byBook[l.book] = { n: 0, staked: 0, pl: 0 }); k.n++; k.staked += l.stake; k.pl += back - l.stake;
+    });
+  }
+  let cum = 0; const pts = S.map(b => { cum += b.pl; return { t: betTime(b), cum: r2(cum), pl: b.pl, label: `${b.player || b.event} (${money(b.pl)})` }; });
+  return { S, net, staked, roi: staked ? net / staked * 100 : 0, mids: mids.length, hits, byType, byBook, pts,
+           open: BETS.filter(b => b.status === 'open').length, manual: S.filter(b => !b.legRes).length };
+}
+function chartSVG(pts) {
+  if (!pts.length) return '<div class="empty">No settled bets in this period yet.</div>';
+  const W = 760, H = 250, pl = 56, pr = 16, pt = 16, pb = 28;
+  const all = [{ t: pts[0].t - 864e5, cum: 0, label: 'Start' }, ...pts];
+  const minT = all[0].t, maxT = all[all.length - 1].t;
+  const ys = all.map(p => p.cum).concat(0), minY = Math.min(...ys), maxY = Math.max(...ys), span = (maxY - minY) || 1;
+  const x = t => pl + (t - minT) / ((maxT - minT) || 1) * (W - pl - pr);
+  const y = v => pt + (1 - (v - minY) / span) * (H - pt - pb);
+  const line = all.map((p, i) => (i ? 'L' : 'M') + x(p.t).toFixed(1) + ' ' + y(p.cum).toFixed(1)).join(' ');
+  const area = line + ` L${x(maxT).toFixed(1)} ${y(0).toFixed(1)} L${x(minT).toFixed(1)} ${y(0).toFixed(1)} Z`;
+  const ticks = [...new Set([minY, 0, maxY].map(v => r2(v)))];
+  const d0 = new Date(minT + 864e5), d1 = new Date(maxT);
+  const dl = d => d.toLocaleDateString([], { day: 'numeric', month: 'short' });
+  return `<svg class="chart" viewBox="0 0 ${W} ${H}" role="img" aria-label="Cumulative profit over time">
+    ${ticks.map(v => `<line class="${v === 0 ? 'ch-zero' : 'ch-grid'}" x1="${pl}" x2="${W - pr}" y1="${y(v).toFixed(1)}" y2="${y(v).toFixed(1)}"/><text class="ch-t" x="${pl - 8}" y="${(y(v) + 4).toFixed(1)}" text-anchor="end">${money(v).replace('+', '')}</text>`).join('')}
+    <path class="ch-area" d="${area}"/><path class="ch-line" d="${line}"/>
+    ${pts.map(p => `<circle class="ch-dot" cx="${x(p.t).toFixed(1)}" cy="${y(p.cum).toFixed(1)}" r="3.5"><title>${esc(p.label)} - running total ${money(p.cum)}</title></circle>`).join('')}
+    <text class="ch-t" x="${pl}" y="${H - 6}">${dl(d0)}</text><text class="ch-t" x="${W - pr}" y="${H - 6}" text-anchor="end">${dl(d1)}</text></svg>`;
+}
+function tableHTML(rows, first) {
+  const keys = Object.keys(rows);
+  if (!keys.length) return '<div class="mu">Nothing settled yet.</div>';
+  return `<table><thead><tr><th>${first}</th><th>Bets</th><th>Staked</th><th>P/L</th><th>ROI</th></tr></thead><tbody>` +
+    keys.sort((a, b) => rows[b].pl - rows[a].pl).map(k => { const r = rows[k];
+      return `<tr><td>${esc(k)}</td><td>${r.n}</td><td>${plain(r.staked)}</td><td class="${sgn(r.pl)}">${money(r.pl)}</td><td class="${sgn(r.pl)}">${r.staked ? (r.pl / r.staked * 100).toFixed(1) + '%' : '-'}</td></tr>`; }).join('') + '</tbody></table>';
+}
+function drawResults() {
+  $('period').innerHTML = [['7', '7 days'], ['30', '30 days'], ['all', 'All time']].map(([k, l]) => `<button class="${PERIOD === k ? 'on' : ''}" data-p="${k}">${l}</button>`).join('');
+  const s = statsFor(PERIOD);
+  const k = (label, val, cls, small) => `<div class="k"><span>${label}</span><b class="${cls || ''}">${val}</b>${small ? `<small>${small}</small>` : ''}</div>`;
+  $('kpis').innerHTML =
+    k('Net profit', money(s.net), sgn(s.net), `${s.S.length} settled bet${s.S.length === 1 ? '' : 's'}`) +
+    k('ROI', s.staked ? s.roi.toFixed(2) + '%' : '-', sgn(s.net), `on ${plain(s.staked)} staked`) +
+    k('Avg per bet', s.S.length ? money(s.net / s.S.length) : '-', s.S.length ? sgn(s.net) : '', '') +
+    k('Middle hit rate', s.mids ? Math.round(s.hits / s.mids * 100) + '%' : '-', '', s.mids ? `${s.hits} of ${s.mids} middles hit` : 'no settled middles yet') +
+    k('Open bets', s.open, '', 'waiting to settle');
+  $('chart').innerHTML = chartSVG(s.pts);
+  $('chartnote').textContent = s.manual ? `${s.manual} bet${s.manual > 1 ? 's' : ''} entered manually (not in bookmaker table)` : '';
+  $('byType').innerHTML = tableHTML(s.byType, 'Type');
+  $('byBook').innerHTML = tableHTML(s.byBook, 'Bookmaker');
+}
+function refreshHead() {
+  const net = BETS.filter(b => b.status === 'settled').reduce((a, b) => a + b.pl, 0), open = BETS.filter(b => b.status === 'open').length;
+  $('netpill').textContent = 'Net ' + money(net);
+  $('netpill').className = 'pill ' + sgn(net);
+  $('openCount').hidden = !open; $('openCount').textContent = open;
+}
+function refreshTracker() { refreshHead(); drawBets(); if (!$('tab-results').hidden) drawResults(); }
+
+// ---------------------------------------------------------- export / backup
+const q = v => '"' + String(v ?? '').replace(/"/g, '""') + '"';
+function betsCSV() {
+  const head = ['placed_at', 'event_start', 'status', 'type', 'event', 'player', 'market', 'leg_1', 'leg_2', 'leg_3', 'total_stake', 'result', 'profit_loss'];
+  const rows = BETS.map(e => {
+    const legs = e.legs.map(l => `${l.book} ${e.kind === 'ou' ? l.side.toUpperCase() + ' ' + l.line : l.side} @${l.price} $${l.stake}`);
+    return [e.placedAt, e.start, e.status, e.type, e.event, e.player, LABELS[e.market] || e.market, legs[0], legs[1], legs[2], r2(totalStake(e)), e.result, e.pl].map(q).join(',');
+  });
+  return [head.join(','), ...rows].join('\n');
+}
+function download(name, text, type) {
+  const a = document.createElement('a'); a.href = URL.createObjectURL(new Blob([text], { type })); a.download = name;
+  document.body.appendChild(a); a.click(); a.remove(); setTimeout(() => URL.revokeObjectURL(a.href), 2000);
+}
+function restoreBets(text) {
+  const data = JSON.parse(text); const incoming = Array.isArray(data) ? data : data.bets;
+  if (!Array.isArray(incoming)) throw new Error('not a backup file');
+  let n = 0;
+  for (const b of incoming) { if (!b || !b.id || !Array.isArray(b.legs)) continue; const i = BETS.findIndex(x => x.id === b.id); if (i >= 0) BETS[i] = b; else BETS.push(b); n++; }
+  saveBets(); return n;
+}
+
+// One-off: the Jordan Walsh rebounds bet Jayson placed (Detroit Pistons v Boston Celtics, 21 Oct), loaded once into My bets.
+function seedWalsh() {
+  if (location.protocol !== 'file:') return;   // only the original local copy, never a hosted one
+  try { if (localStorage.getItem('arbscan_seed_walsh')) return; localStorage.setItem('arbscan_seed_walsh', '1'); } catch (e) { return; }
+  const legs = [
+    { book: 'Sportsbet', side: 'under', line: 2.5, price: 2.60, stake: 31 },
+    { book: 'Sportsbet', side: 'under', line: 3.5, price: 1.80, stake: 30 },
+    { book: 'TAB', side: 'over', line: 2.5, price: 1.80, stake: 75 }];
+  const ex = BETS.find(b => b.status === 'open' && b.player === 'Jordan Walsh' && b.market === 'player_rebounds');
+  if (ex) { ex.legs = legs; ex.type = 'MIDDLE'; ex.custom = true; }
+  else BETS.push({ id: 'seed-walsh-1', oid: 'seed-walsh-20261021', placedAt: new Date().toISOString(), type: 'MIDDLE', kind: 'ou', custom: true, sport: 'basketball_nba',
+    event: 'Detroit Pistons v Boston Celtics', start: '2026-10-20T19:00:00Z', market: 'player_rebounds', player: 'Jordan Walsh',
+    legs, status: 'open', result: null, pl: null, legRes: null, settledAt: null });
+  saveBets();
+}
+
+
+// ---------------------------------------------------------- copy / paste backup (easy move between PC and phone)
+function openBox(mode) {
+  const copy = mode === 'copy';
+  $('mtitle').textContent = copy ? 'Copy backup text' : 'Paste backup text';
+  $('mdesc').textContent = copy ? 'Copy this text, send it to your other device (email or message yourself), then use "Paste backup text" there. Only bets are included, not your API keys.'
+                                : 'Paste the backup text from your other device. Bets are merged in, nothing is deleted.';
+  $('mtext').value = copy ? JSON.stringify({ version: 1, bets: BETS }) : '';
+  $('mtext').readOnly = copy;
+  $('mgo').textContent = copy ? 'Copy to clipboard' : 'Restore bets';
+  $('mgo').dataset.mode = mode;
+  $('modal').hidden = false;
+  if (copy) { $('mtext').focus(); $('mtext').select(); }
+}
+async function boxGo() {
+  if ($('mgo').dataset.mode === 'copy') {
+    try { await navigator.clipboard.writeText($('mtext').value); toast('Copied. Paste it on your other device.'); }
+    catch (e) { $('mtext').select(); toast('Select all and copy the text manually'); }
+  } else {
+    try { const n = restoreBets($('mtext').value.trim()); $('modal').hidden = true; refreshTracker(); toast(`Restored ${n} bet${n === 1 ? '' : 's'}`); }
+    catch (e) { toast('That text is not a valid backup'); }
+  }
+}
+
+
+// ---------------------------------------------------------- cross-device sync (encrypted file in a private GitHub repo)
+const SYNC_FILE = 'arbscan-data.json';
+let SU = 0, SETSIG = '', SYNCING = false, SYNC_AGAIN = false, SYNC_TIMER = null, APPLYING = false, LAST_AUTO = 0;
+const b64 = u8 => { let t = ''; u8.forEach(x => t += String.fromCharCode(x)); return btoa(t); };
+const unb64 = t => Uint8Array.from(atob(t), c => c.charCodeAt(0));
+async function deriveKey(pass, salt) {
+  const km = await crypto.subtle.importKey('raw', new TextEncoder().encode(pass), 'PBKDF2', false, ['deriveKey']);
+  return crypto.subtle.deriveKey({ name: 'PBKDF2', salt, iterations: 150000, hash: 'SHA-256' }, km, { name: 'AES-GCM', length: 256 }, false, ['encrypt', 'decrypt']);
+}
+async function encryptJSON(obj, pass) {
+  const salt = crypto.getRandomValues(new Uint8Array(16)), iv = crypto.getRandomValues(new Uint8Array(12));
+  const ct = await crypto.subtle.encrypt({ name: 'AES-GCM', iv }, await deriveKey(pass, salt), new TextEncoder().encode(JSON.stringify(obj)));
+  return { v: 1, salt: b64(salt), iv: b64(iv), data: b64(new Uint8Array(ct)) };
+}
+async function decryptJSON(blob, pass) {
+  try {
+    const pt = await crypto.subtle.decrypt({ name: 'AES-GCM', iv: unb64(blob.iv) }, await deriveKey(pass, unb64(blob.salt)), unb64(blob.data));
+    return JSON.parse(new TextDecoder().decode(pt));
+  } catch (e) { throw new Error('Wrong sync password, or that file is not from ArbScan.'); }
+}
+function syncCfg() { try { const c = JSON.parse(localStorage.getItem('arbscan_sync') || 'null'); return c && c.repo && c.token && c.pass ? c : null; } catch (e) { return null; } }
+function setSyncStatus(t) { const el = $('syncStatus'); if (el) el.textContent = t; }
+function getSettings() {
+  const g = k => { try { return JSON.parse(localStorage.getItem(k) || 'null'); } catch (e) { return null; } };
+  return { main: g('arbscan'), list: g('arbscan_list'), feeds: g('arbscan_rfeeds'), excl: g('arbscan_excl'), sports: g('arbscan_sports') };
+}
+function applySettings(o) {
+  const put = (k, v) => { if (v != null) localStorage.setItem(k, JSON.stringify(v)); };
+  put('arbscan', o.main); put('arbscan_list', o.list); put('arbscan_rfeeds', o.feeds); put('arbscan_excl', o.excl); put('arbscan_sports', o.sports);
+  load(); loadScan(); fillSports(); drawMarkets(); drawChips(); drawFeeds(); loadExcl(); drawExcl();
+  SETSIG = JSON.stringify(getSettings());
+}
+function touchSettings() {
+  if (APPLYING) return;
+  const sig = JSON.stringify(getSettings()); if (sig === SETSIG) return;
+  SETSIG = sig; SU = Date.now();
+  try { localStorage.setItem('arbscan_su', String(SU)); } catch (e) {}
+  queueSync();
+}
+function mergeData(L, R, firstSync) {
+  const tomb = { ...(R.tomb || {}) };
+  for (const [id, t] of Object.entries(L.tomb || {})) tomb[id] = Math.max(tomb[id] || 0, t);
+  const cutoff = Date.now() - 180 * 864e5; for (const id of Object.keys(tomb)) if (tomb[id] < cutoff) delete tomb[id];
+  const byId = new Map();
+  for (const b of R.bets || []) byId.set(b.id, b);
+  for (const b of L.bets || []) { const o = byId.get(b.id); if (!o || (b.u || 0) >= (o.u || 0)) byId.set(b.id, b); }
+  const bets = [...byId.values()].filter(b => !(tomb[b.id] && tomb[b.id] >= (b.u || 0)));
+  const remoteWins = !!R.settings && (firstSync || (R.su || 0) > (L.su || 0));
+  return { bets, tomb, su: remoteWins ? (R.su || 0) : (L.su || 0), settings: remoteWins ? R.settings : L.settings, remoteWins };
+}
+const dataSig = d => JSON.stringify({ b: (d.bets || []).map(b => [b.id, b.u]).sort(), t: Object.entries(d.tomb || {}).sort(), su: d.su || 0 });
+function queueSync() {
+  if (APPLYING || !syncCfg()) return;
+  clearTimeout(SYNC_TIMER); SYNC_TIMER = setTimeout(() => syncNow(false), 2500);
+}
+async function syncNow(manual) {
+  const c = syncCfg();
+  if (!c) { if (manual) toast('Fill in repository, token and sync password first'); return; }
+  if (SYNCING) { SYNC_AGAIN = true; return; }
+  SYNCING = true; setSyncStatus('Syncing...');
+  try {
+    const url = `https://api.github.com/repos/${c.repo.trim()}/contents/${SYNC_FILE}`;
+    const hdr = { Authorization: 'Bearer ' + c.token.trim(), Accept: 'application/vnd.github+json' };
+    for (let attempt = 0; attempt < 3; attempt++) {
+      let sha = null, remote = { bets: [], tomb: {}, su: 0, settings: null };
+      const r = await fetch(url, { headers: hdr });
+      if (r.status === 404) {
+        const probe = await fetch(`https://api.github.com/repos/${c.repo.trim()}`, { headers: hdr });
+        if (probe.status === 404) throw new Error('Repository not found. Check the name, and that the token has access to it.');
+      } else if (r.status === 401 || r.status === 403) throw new Error('GitHub rejected the token. It needs Contents: Read and write on that repository.');
+      else if (!r.ok) throw new Error('GitHub error ' + r.status);
+      else { const j = await r.json(); sha = j.sha; remote = await decryptJSON(JSON.parse(atob(j.content.replace(/\s/g, ''))), c.pass); }
+      if (!SU && localStorage.getItem('arbscan')) { SU = Date.now(); try { localStorage.setItem('arbscan_su', String(SU)); } catch (e) {} }
+      const firstSync = !localStorage.getItem('arbscan_synced');
+      const m = mergeData({ bets: BETS, tomb: TOMB, su: SU, settings: getSettings() }, remote, firstSync);
+      // apply to this device
+      APPLYING = true;
+      try {
+        BETS = m.bets; TOMB = m.tomb; SNAP = {}; BETS.forEach(b => SNAP[b.id] = stripU(b)); persistBets();
+        if (m.remoteWins) { SU = m.su; try { localStorage.setItem('arbscan_su', String(SU)); } catch (e) {} applySettings(m.settings); }
+      } finally { APPLYING = false; }
+      refreshTracker(); draw();
+      // push if the shared file is out of date
+      const out = { v: 1, bets: m.bets, tomb: m.tomb, su: m.su, settings: m.settings };
+      if (sha === null || dataSig(out) !== dataSig(remote)) {
+        const body = { message: 'ArbScan sync', content: btoa(JSON.stringify(await encryptJSON(out, c.pass))) };
+        if (sha) body.sha = sha;
+        const w = await fetch(url, { method: 'PUT', headers: { ...hdr, 'Content-Type': 'application/json' }, body: JSON.stringify(body) });
+        if (w.status === 409 || w.status === 422) continue;           // someone else wrote first: merge again
+        if (!w.ok) throw new Error('Could not save to GitHub (' + w.status + ')');
+      }
+      try { localStorage.setItem('arbscan_synced', '1'); } catch (e) {}
+      setSyncStatus('Synced ' + new Date().toLocaleTimeString([], { hour: 'numeric', minute: '2-digit' }));
+      if (manual) toast('Synced');
+      return;
+    }
+    throw new Error('Sync kept conflicting, try again.');
+  } catch (e) {
+    const msg = /fetch/i.test(String(e.message)) ? 'Could not reach GitHub. Check your connection.' : e.message;
+    setSyncStatus('Sync failed: ' + msg); if (manual) toast('Sync failed');
+  } finally { SYNCING = false; if (SYNC_AGAIN) { SYNC_AGAIN = false; queueSync(); } }
+}
+function initSync() {
+  try { SU = +localStorage.getItem('arbscan_su') || 0; } catch (e) {}
+  SETSIG = JSON.stringify(getSettings());
+  const c = syncCfg();
+  if (c) { $('syncRepo').value = c.repo; $('syncToken').value = c.token; $('syncPass').value = c.pass; setSyncStatus('Connected'); setTimeout(() => syncNow(false), 600); }
+  $('syncSave').onclick = () => {
+    const cfg = { repo: $('syncRepo').value.trim(), token: $('syncToken').value.trim(), pass: $('syncPass').value };
+    if (!/^[\w.-]+\/[\w.-]+$/.test(cfg.repo)) return toast('Repository should look like owner/name');
+    if (!cfg.token || !cfg.pass) return toast('Enter the token and a sync password');
+    try { localStorage.setItem('arbscan_sync', JSON.stringify(cfg)); } catch (e) {}
+    syncNow(true);
+  };
+  $('syncOff').onclick = () => {
+    try { localStorage.removeItem('arbscan_sync'); localStorage.removeItem('arbscan_synced'); } catch (e) {}
+    $('syncToken').value = ''; $('syncPass').value = ''; setSyncStatus('Not connected'); toast('This device is disconnected');
+  };
+  const auto = () => { if (document.hidden || !syncCfg() || Date.now() - LAST_AUTO < 20000) return; LAST_AUTO = Date.now(); syncNow(false); };
+  document.addEventListener('visibilitychange', auto); window.addEventListener('focus', auto);
+}
+
+// ---------------------------------------------------------- tabs & theme
+function showTab(name) {
+  for (const t of ['scan', 'bets', 'results', 'settings']) $('tab-' + t).hidden = t !== name;
+  document.querySelectorAll('#tabs .tab').forEach(b => b.classList.toggle('on', b.dataset.tab === name));
+  if (name === 'bets') { drawBets(); if (!AUTOCHK) { AUTOCHK = true; checkResults(false); } }
+  if (name === 'results') drawResults();
+}
+function setTheme(t) {
+  if (t) document.documentElement.setAttribute('data-theme', t); else document.documentElement.removeAttribute('data-theme');
+  try { t ? localStorage.setItem('arbscan_theme', t) : localStorage.removeItem('arbscan_theme'); } catch (e) {}
+}
+
+function setAuto() {
+  clearInterval(timer);
+  const m = +$('auto').value;
+  if (m > 0) timer = setInterval(() => scan(false), Math.max(1, m) * 60e3);
+}
+if (typeof document !== 'undefined') {
+  load(); loadScan(); fillSports(); drawMarkets(); drawChips();
+  $('sport').onchange = () => { drawMarkets(); loadGames(false); };
+  $('mklist').onchange = () => { updSum(); syncTicks(); };
+  $('gmlist').onchange = () => { updGmSum(); syncTicks(); };
+  $('gmlist').onclick = e => {
+    const a = e.target.dataset.g; if (!a) return;
+    if (a === 'reload') return loadGames(true);
+    $('gmlist').querySelectorAll('input').forEach(i => i.checked = a === 'all'); updGmSum(); syncTicks();
+  };
+  $('key').onchange = () => { save(); loadGames(true); };
+  document.addEventListener('click', e => document.querySelectorAll('details.dd[open]').forEach(d => { if (!d.contains(e.target)) d.open = false; }));
+  if ($('key').value.trim()) loadGames(false);
+  $('add').onclick = addToScan;
+  $('loadsports').onclick = loadSports;
+  $('maxev').onchange = drawChips;
+  try { RCACHE = JSON.parse(localStorage.getItem('arbscan_rkeys') || '{}'); } catch (e) { RCACHE = {}; }
+  loadExcl(); drawExcl();
+  $('exlist').onchange = () => updExcl(true);
+  drawFeeds();
+  $('rblist').onchange = updFeeds;
+  $('srcOdds').onchange = () => { save(); drawChips(); };
+  $('srcRapid').onchange = () => { save(); drawChips(); };
+  $('rkey').onchange = save;
+  $('chips').onclick = e => { const k = e.target.dataset.rm; if (k) { delete SCAN[k]; saveScan(); drawChips(); drawMarkets(); } };
+  $('scan').onclick = () => scan(false);
+  $('demo').onclick = () => scan(true);
+  $('auto').onchange = () => { save(); setAuto(); };
+  $('filters').onclick = e => { if (e.target.dataset.f) { FILTER = e.target.dataset.f; draw(); } };
+  loadBets(); seedWalsh(); refreshHead(); initSync();
+  try { const th = localStorage.getItem('arbscan_theme'); if (th) setTheme(th); } catch (e) {}
+  $('theme').onclick = () => {
+    const cur = document.documentElement.getAttribute('data-theme') || ((window.matchMedia && matchMedia('(prefers-color-scheme: dark)').matches) ? 'dark' : 'light');
+    setTheme(cur === 'dark' ? 'light' : 'dark');
+  };
+  $('tabs').onclick = e => { const t = e.target.closest('.tab'); if (t) showTab(t.dataset.tab); };
+  $('netpill').onclick = () => showTab('results');
+  $('list').addEventListener('input', onListInput);
+  $('list').addEventListener('change', onListChange);
+  $('list').addEventListener('click', onListClick);
+  $('tab-bets').addEventListener('click', onBetsClick);
+  $('period').onclick = e => { const p = e.target.dataset.p; if (p) { PERIOD = p; drawResults(); } };
+  $('copyBk').onclick = () => { $('bk').open = false; openBox('copy'); };
+  $('pasteBk').onclick = () => { $('bk').open = false; openBox('paste'); };
+  $('mgo').onclick = boxGo;
+  $('mclose').onclick = () => { $('modal').hidden = true; };
+  $('modal').onclick = e => { if (e.target === $('modal')) $('modal').hidden = true; };
+  $('chkRes').onclick = () => checkResults(true);
+  $('applyAll').onclick = applyAllSugg;
+  $('expCsv').onclick = () => BETS.length ? download('arbscan-bets.csv', betsCSV(), 'text/csv') : toast('No bets to export yet');
+  $('expJson').onclick = () => BETS.length ? download('arbscan-backup.json', JSON.stringify({ version: 1, bets: BETS }, null, 1), 'application/json') : toast('No bets to back up yet');
+  $('restoreFile').onchange = ev => {
+    const f = ev.target.files[0]; if (!f) return;
+    const rd = new FileReader();
+    rd.onload = () => { try { const n = restoreBets(String(rd.result)); refreshTracker(); toast(`Restored ${n} bet${n === 1 ? '' : 's'}`); } catch (e) { toast('That file could not be read'); } };
+    rd.readAsText(f); ev.target.value = '';
+  };
+  setAuto();
+}
+</script>
+</body>
+</html>
